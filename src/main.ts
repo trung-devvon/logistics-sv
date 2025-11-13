@@ -10,6 +10,7 @@ import { AppModule } from './app.module';
 import helmet from '@fastify/helmet';
 import compress from '@fastify/compress';
 import { ConfigService } from '@nestjs/config';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
@@ -18,6 +19,18 @@ async function bootstrap() {
   );
   
   const configService = app.get(ConfigService);
+
+  // Validation global
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+      transformOptions: {
+        enableImplicitConversion: true, // Tự động convert type
+      },
+    }),
+  );
 
   // CORS
   app.enableCors({

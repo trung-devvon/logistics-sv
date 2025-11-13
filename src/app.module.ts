@@ -1,12 +1,13 @@
-import { UsersModule } from './users/users.module';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
 
-import configuration from './config/configuration';
-import { validationSchema } from './config/validation.schema';
+import configuration from './core/config/configuration';
+import { validationSchema } from './core/config/validation.schema';
+import { PrismaModule } from './core/prisma/prisma.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { validationSchema } from './config/validation.schema';
           ? '.env.production'
           : '.env.development',
     }),
+    PrismaModule,
     UsersModule,
   ],
   controllers: [AppController],
