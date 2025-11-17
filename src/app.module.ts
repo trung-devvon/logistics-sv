@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -7,8 +7,8 @@ import { AppService } from './app.service';
 import configuration from './core/config/configuration';
 import { validationSchema } from './core/config/validation.schema';
 import { PrismaModule } from './core/prisma/prisma.module';
-import { UsersModule } from './users/users.module';
-
+import { UsersModule } from './modules/users/users.module';
+import { AuthModule } from './modules/auth/auth.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -27,6 +27,7 @@ import { UsersModule } from './users/users.module';
     }),
     PrismaModule,
     UsersModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

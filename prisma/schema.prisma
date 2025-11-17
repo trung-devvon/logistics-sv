@@ -15,48 +15,151 @@ datasource db {
 
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  name      String?
-  password  String
-  role      Role     @default(USER)
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String    @id @default(uuid()) @db.Uuid
+  email        String    @unique 
+  passwordHash String    @map("password_hash")
+  fullName     String?   @map("full_name")
+  phone        String?
+  isActive     Boolean   @default(true) @map("is_active")
+  twoFaEnabled Boolean   @default(false) @map("two_fa_enabled")
+  twoFaSecret  String?   @map("two_fa_secret")
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime? @map("updated_at") @db.Timestamptz(6)
 
-  posts     Post[]   // Relation 1-nhiều với Post
-  profile   Profile? // Relation 1-1 với Profile
+  // relations
+  sessions        Session[]
+  refreshTokens   RefreshToken[]
+  loginAttempts   LoginAttempt[]
+  passwordResets  PasswordReset[]
+  apiKeys         ApiKey[]
+  userRoles       UserRole[]
 
-  @@map("users") // Tên bảng trong DB
-}
-// Model Profile (1-1 với User)
-model Profile {
-  id       Int     @id @default(autoincrement())
-  bio      String?
-  avatar   String?
-  userId   Int     @unique
-  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("profiles")
+  @@map("users")
+  @@index([isActive], map: "idx_users_active")
 }
 
-// Model Post (nhiều Post thuộc 1 User)
-model Post {
-  id        Int      @id @default(autoincrement())
-  title     String
-  content   String?
-  published Boolean  @default(false)
-  authorId  Int
-  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+// ---------- roles ----------
+model Role {
+  id          String  @id @default(uuid()) @db.Uuid
+  code        String  @unique
+  name        String
+  description String?
 
-  @@map("posts")
+  rolePermissions RolePermission[]
+  userRoles       UserRole[]
+
+  @@map("roles")
 }
 
-// Enum
-enum Role {
-  USER
-  ADMIN
-  MODERATOR
+// ---------- permissions ----------
+model Permission {
+  id          String  @id @default(uuid()) @db.Uuid
+  code        String  @unique
+  name        String?
+  description String?
+
+  rolePermissions RolePermission[]
+
+  @@map("permissions")
+}
+
+// ---------- user_roles (PK user_id, role_id) ----------
+model UserRole {
+  userId String @db.Uuid
+  roleId String @db.Uuid
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+  @@map("user_roles")
+}
+
+// ---------- role_permissions (PK role_id, permission_id) ----------
+model RolePermission {
+  roleId       String @db.Uuid
+  permissionId String @db.Uuid
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+// ---------- sessions ----------
+model Session {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  userAgent String?   @map("user_agent")
+  ipAddress String?   @db.Inet @map("ip_address")
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  expiresAt DateTime? @map("expires_at") @db.Timestamptz(6)
+  revokedAt DateTime? @map("revoked_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt(sort: Desc)], map: "idx_sessions_user")
+  @@map("sessions")
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+
+  tokenHash String    @unique @map("token_hash")
+
+  issuedAt  DateTime  @default(now()) @map("issued_at") @db.Timestamptz(6)
+  expiresAt DateTime? @map("expires_at") @db.Timestamptz(6)
+  revokedAt DateTime? @map("revoked_at") @db.Timestamptz(6)
+  parentId String?   @map("parent_id") @db.Uuid
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, issuedAt(sort: Desc)], map: "idx_rt_user")
+  @@map("refresh_tokens")
+}
+
+// ---------- login_attempts (bigserial PK) ----------
+model LoginAttempt {
+  id         BigInt   @id @default(autoincrement()) @db.BigInt
+  userId     String?  @db.Uuid
+  email      String?
+  ipAddress  String?  @db.Inet @map("ip_address")
+  success    Boolean
+  occurredAt DateTime @default(now()) @map("occurred_at") @db.Timestamptz(6)
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([email, occurredAt(sort: Desc)], map: "idx_login_email_time")
+  @@map("login_attempts")
+}
+
+// ---------- password_resets ----------
+model PasswordReset {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  token     String    @unique
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  expiresAt DateTime? @map("expires_at") @db.Timestamptz(6)
+  usedAt    DateTime? @map("used_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("password_resets")
+}
+
+// ---------- api_keys ----------
+model ApiKey {
+  id          String    @id @default(uuid()) @db.Uuid
+  name        String?
+  keyHash     String    @unique @map("key_hash")
+  ownerUserId String?   @db.Uuid @map("owner_user_id")
+  scopes      String?
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  revokedAt   DateTime? @map("revoked_at") @db.Timestamptz(6)
+
+  owner User? @relation(fields: [ownerUserId], references: [id], onDelete: SetNull)
+
+  @@map("api_keys")
 }
