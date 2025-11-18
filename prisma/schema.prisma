@@ -1,11 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client-js" 
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -13,10 +7,9 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 model User {
   id           String    @id @default(uuid()) @db.Uuid
-  email        String    @unique 
+  email        String    @unique
   passwordHash String    @map("password_hash")
   fullName     String?   @map("full_name")
   phone        String?
@@ -26,16 +19,46 @@ model User {
   createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt    DateTime? @map("updated_at") @db.Timestamptz(6)
 
-  // relations
-  sessions        Session[]
-  refreshTokens   RefreshToken[]
-  loginAttempts   LoginAttempt[]
-  passwordResets  PasswordReset[]
-  apiKeys         ApiKey[]
-  userRoles       UserRole[]
+  // core relations
+  sessions       Session[]
+  refreshTokens  RefreshToken[]
+  loginAttempts  LoginAttempt[]
+  passwordResets PasswordReset[]
+  apiKeys        ApiKey[]
+  userRoles      UserRole[]
 
-  @@map("users")
+  // opposite relations
+  userOrgs UserOrg[]
+  driver   Driver?
+
+  vehicleAssignmentsAssigned VehicleAssignment[] @relation("VehicleAssignedBy")
+
+  orderHistoriesChanged    OrderHistory[]    @relation("OrderHistoryChangedBy")
+  shipmentHistoriesChanged ShipmentHistory[] @relation("ShipmentHistoryChangedBy")
+  stopEventsCreated        StopEvent[]       @relation("StopEventCreatedBy")
+
+  orderScansBy    OrderScan[]    @relation("OrderScanBy")
+  shipmentScansBy ShipmentScan[] @relation("ShipmentScanBy")
+
+  tariffsCreated     Tariff[]        @relation("TariffCreatedBy")
+  webhooksCreated    Webhook[]       @relation("WebhookCreatedBy")
+  partnerKeysCreated ApiPartnerKey[] @relation("ApiPartnerKeyCreatedBy")
+
+  geoCacheRequests  GeocodingCache[]      @relation("GeoRequestedBy")
+  distCacheRequests DistanceMatrixCache[] @relation("DistRequestedBy")
+
+  exceptionCreated ExceptionCase[] @relation("ExceptionCreatedBy")
+  claimsCreated    Claim[]         @relation("ClaimCreatedBy")
+  claimsApproved   Claim[]         @relation("ClaimApprovedBy")
+
+  configReportsCreated ConfigReport[] @relation("ConfigReportCreatedBy")
+
+  notifications  Notification[]
+  documentsOwned Document[]
+  auditLogs      AuditLog[]     @relation("AuditActor")
+
   @@index([isActive], map: "idx_users_active")
+  @@map("users")
 }
 
 // ---------- roles ----------
@@ -92,7 +115,7 @@ model Session {
   id        String    @id @default(uuid()) @db.Uuid
   userId    String    @db.Uuid
   userAgent String?   @map("user_agent")
-  ipAddress String?   @db.Inet @map("ip_address")
+  ipAddress String?   @map("ip_address") @db.Inet
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   expiresAt DateTime? @map("expires_at") @db.Timestamptz(6)
   revokedAt DateTime? @map("revoked_at") @db.Timestamptz(6)
@@ -104,15 +127,15 @@ model Session {
 }
 
 model RefreshToken {
-  id        String    @id @default(uuid()) @db.Uuid
-  userId    String    @db.Uuid
+  id     String @id @default(uuid()) @db.Uuid
+  userId String @db.Uuid
 
-  tokenHash String    @unique @map("token_hash")
+  tokenHash String @unique @map("token_hash")
 
   issuedAt  DateTime  @default(now()) @map("issued_at") @db.Timestamptz(6)
   expiresAt DateTime? @map("expires_at") @db.Timestamptz(6)
   revokedAt DateTime? @map("revoked_at") @db.Timestamptz(6)
-  parentId String?   @map("parent_id") @db.Uuid
+  parentId  String?   @map("parent_id") @db.Uuid
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -120,12 +143,12 @@ model RefreshToken {
   @@map("refresh_tokens")
 }
 
-// ---------- login_attempts (bigserial PK) ----------
+// ---------- login_attempts ----------
 model LoginAttempt {
   id         BigInt   @id @default(autoincrement()) @db.BigInt
   userId     String?  @db.Uuid
   email      String?
-  ipAddress  String?  @db.Inet @map("ip_address")
+  ipAddress  String?  @map("ip_address") @db.Inet
   success    Boolean
   occurredAt DateTime @default(now()) @map("occurred_at") @db.Timestamptz(6)
 
@@ -154,7 +177,7 @@ model ApiKey {
   id          String    @id @default(uuid()) @db.Uuid
   name        String?
   keyHash     String    @unique @map("key_hash")
-  ownerUserId String?   @db.Uuid @map("owner_user_id")
+  ownerUserId String?   @map("owner_user_id") @db.Uuid
   scopes      String?
   createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   revokedAt   DateTime? @map("revoked_at") @db.Timestamptz(6)
@@ -162,4 +185,855 @@ model ApiKey {
   owner User? @relation(fields: [ownerUserId], references: [id], onDelete: SetNull)
 
   @@map("api_keys")
+}
+
+// =============== ORG / SCOPE ===============
+model Org {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  code      String   @unique
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  members         UserOrg[]
+  hubs            Hub[]
+  partners        Partner[]
+  tariffs         Tariff[]
+  surcharges      Surcharge[]
+  serviceLevels   ConfigServiceLevel[]
+  configReports   ConfigReport[]
+  geoCaches       GeocodingCache[]
+  distCaches      DistanceMatrixCache[]
+  exceptionCases  ExceptionCase[]
+  claims          Claim[]
+  customers       Customer[]
+  capacityPlans   CapacityPlan[]
+  webhooks        Webhook[]
+  partnerApiKeys  ApiPartnerKey[]
+  partnerMappings PartnerMapping[]
+  reportDailyOps  ReportDailyOps[]
+
+  @@map("orgs")
+}
+
+model UserOrg {
+  userId String @map("user_id") @db.Uuid
+  orgId  String @map("org_id") @db.Uuid
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  org  Org  @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@id([userId, orgId])
+  @@map("user_orgs")
+}
+
+// =============== HUBS / WAREHOUSE ===============
+model Hub {
+  id        String   @id @default(uuid()) @db.Uuid
+  orgId     String?  @map("org_id") @db.Uuid
+  name      String
+  address   String?
+  lat       Decimal? @db.Decimal(9, 6)
+  lng       Decimal? @db.Decimal(9, 6)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  org             Org?             @relation(fields: [orgId], references: [id], onDelete: SetNull)
+  originShipments Shipment[]       @relation("ShipmentOrigin")
+  destShipments   Shipment[]       @relation("ShipmentDest")
+  orderScans      OrderScan[]
+  shipmentScans   ShipmentScan[]
+  partnerMappings PartnerMapping[]
+  reportDailyOps  ReportDailyOps[]
+
+  @@map("hubs")
+}
+
+// =============== FLEET (Drivers/Vehicles) ===============
+model Driver {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @unique @map("user_id") @db.Uuid
+  licenseNo String    @map("license_no")
+  status    String // AVAILABLE|BUSY|OFF|SUSPENDED
+  hiredAt   DateTime? @map("hired_at") @db.Timestamptz(6)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user            User                      @relation(fields: [userId], references: [id])
+  assignments     VehicleAssignment[]
+  settlements     CODSettlement[]
+  performance     ReportDriverPerformance[]
+  codTransactions CODTransaction[]
+  shifts          DriverShift[]
+  exceptionCases  ExceptionCase[]
+
+  // Opposite for Claim.driver
+  claims Claim[] @relation("ClaimDriver")
+
+  @@index([status], map: "idx_driver_status")
+  @@map("drivers")
+}
+
+model Vehicle {
+  id          String   @id @default(uuid()) @db.Uuid
+  plateNumber String   @unique @map("plate_number")
+  type        String?
+  capacityKg  Decimal  @map("capacity_kg") @db.Decimal(18, 4)
+  capacityM3  Decimal? @map("capacity_m3") @db.Decimal(18, 4)
+  status      String // AVAILABLE|IN_SERVICE|MAINTENANCE|INACTIVE
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  assignments    VehicleAssignment[]
+  locations      VehicleLocation[]
+  maintenances   VehicleMaintenance[]
+  expenses       VehicleExpense[]
+  fuelLogs       FuelLog[]
+  usageReports   ReportVehicleUsage[]
+  exceptionCases ExceptionCase[]
+
+  @@index([status], map: "idx_vehicle_status")
+  @@map("vehicles")
+}
+
+model VehicleAssignment {
+  id         String   @id @default(uuid()) @db.Uuid
+  shipmentId String   @unique @map("shipment_id") @db.Uuid
+  driverId   String?  @map("driver_id") @db.Uuid
+  vehicleId  String?  @map("vehicle_id") @db.Uuid
+  assignedBy String?  @map("assigned_by") @db.Uuid
+  assignedAt DateTime @default(now()) @map("assigned_at") @db.Timestamptz(6)
+
+  shipment Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  driver   Driver?  @relation(fields: [driverId], references: [id], onDelete: SetNull)
+  vehicle  Vehicle? @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
+  byUser   User?    @relation("VehicleAssignedBy", fields: [assignedBy], references: [id], onDelete: SetNull)
+
+  @@index([driverId], map: "idx_va_driver")
+  @@index([vehicleId], map: "idx_va_vehicle")
+  @@map("vehicle_assignments")
+}
+
+model VehicleMaintenance {
+  id          String    @id @default(uuid()) @db.Uuid
+  vehicleId   String    @map("vehicle_id") @db.Uuid
+  type        String
+  scheduledAt DateTime? @map("scheduled_at") @db.Timestamptz(6)
+  doneAt      DateTime? @map("done_at") @db.Timestamptz(6)
+  odometerKm  Decimal?  @map("odometer_km") @db.Decimal(18, 4)
+  notes       String?
+  status      String // SCHEDULED|IN_PROGRESS|DONE|CANCELED
+
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@index([vehicleId, status], map: "idx_vm_vehicle_status")
+  @@map("vehicle_maintenance")
+}
+
+model VehicleLocation {
+  id         BigInt   @id @default(autoincrement()) @db.BigInt
+  vehicleId  String   @map("vehicle_id") @db.Uuid
+  lat        Decimal? @db.Decimal(9, 6)
+  lng        Decimal? @db.Decimal(9, 6)
+  speedKmh   Decimal? @map("speed_kmh") @db.Decimal(18, 4)
+  headingDeg Decimal? @map("heading_deg") @db.Decimal(18, 4)
+  recordedAt DateTime @default(now()) @map("recorded_at") @db.Timestamptz(6)
+
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@index([vehicleId, recordedAt(sort: Desc)], map: "idx_vl_vehicle_time")
+  @@map("vehicle_locations")
+}
+
+model VehicleExpense {
+  id         String   @id @default(uuid()) @db.Uuid
+  vehicleId  String   @map("vehicle_id") @db.Uuid
+  category   String
+  amount     Decimal  @db.Decimal(18, 4)
+  occurredAt DateTime @default(now()) @map("occurred_at") @db.Timestamptz(6)
+  note       String?
+
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@index([vehicleId, occurredAt], map: "idx_exp_vehicle_time")
+  @@map("vehicle_expenses")
+}
+
+model FuelLog {
+  id        String   @id @default(uuid()) @db.Uuid
+  vehicleId String   @map("vehicle_id") @db.Uuid
+  liters    Decimal  @db.Decimal(18, 4)
+  unitPrice Decimal? @map("unit_price") @db.Decimal(18, 4)
+  amount    Decimal? @db.Decimal(18, 4)
+  filledAt  DateTime @default(now()) @map("filled_at") @db.Timestamptz(6)
+  station   String?
+
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@index([vehicleId, filledAt], map: "idx_fuel_vehicle_time")
+  @@map("fuel_logs")
+}
+
+// =============== ORDERS ===============
+model Order {
+  id              String    @id @default(uuid()) @db.Uuid
+  externalCode    String?   @unique @map("external_code")
+  senderName      String?   @map("sender_name")
+  senderPhone     String?   @map("sender_phone")
+  pickupAddress   String?   @map("pickup_address")
+  pickupLat       Decimal?  @map("pickup_lat") @db.Decimal(9, 6)
+  pickupLng       Decimal?  @map("pickup_lng") @db.Decimal(9, 6)
+  receiverName    String?   @map("receiver_name")
+  receiverPhone   String?   @map("receiver_phone")
+  deliveryAddress String?   @map("delivery_address")
+  deliveryLat     Decimal?  @map("delivery_lat") @db.Decimal(9, 6)
+  deliveryLng     Decimal?  @map("delivery_lng") @db.Decimal(9, 6)
+  weightKg        Decimal?  @map("weight_kg") @db.Decimal(18, 4)
+  volumeM3        Decimal?  @map("volume_m3") @db.Decimal(18, 4)
+  codAmount       Decimal?  @map("cod_amount") @db.Decimal(18, 4)
+  status          String // CREATED|ASSIGNED|IN_TRANSIT|DELIVERED|FAILED|RETURNED
+  priority        Int       @default(0)
+  promisedAt      DateTime? @map("promised_at") @db.Timestamptz(6)
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime? @map("updated_at") @db.Timestamptz(6)
+
+  shipmentOrders  ShipmentOrder[]
+  routeStops      RouteStop[]
+  history         OrderHistory[]
+  orderScans      OrderScan[]
+  codTransactions CODTransaction[]
+  exceptionCases  ExceptionCase[]
+  claims          Claim[]
+  partnerMappings PartnerMapping[]
+
+  @@index([status], map: "idx_order_status")
+  @@index([createdAt], map: "idx_order_created")
+  @@index([promisedAt], map: "idx_order_promised")
+  @@map("orders")
+}
+
+model OrderHistory {
+  id         BigInt   @id @default(autoincrement()) @db.BigInt
+  orderId    String   @map("order_id") @db.Uuid
+  fromStatus String?  @map("from_status")
+  toStatus   String?  @map("to_status")
+  changedBy  String?  @map("changed_by") @db.Uuid
+  note       String?
+  changedAt  DateTime @default(now()) @map("changed_at") @db.Timestamptz(6)
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  user  User? @relation("OrderHistoryChangedBy", fields: [changedBy], references: [id], onDelete: SetNull)
+
+  @@index([orderId, changedAt(sort: Desc)], map: "idx_oh_order_time")
+  @@map("order_history")
+}
+
+// =============== SHIPMENTS & ROUTE ===============
+model Shipment {
+  id           String    @id @default(uuid()) @db.Uuid
+  hubOriginId  String?   @map("hub_origin_id") @db.Uuid
+  hubDestId    String?   @map("hub_dest_id") @db.Uuid
+  type         String // INTERHUB|LASTMILE|PICKUP_ONLY|DELIVERY_ONLY
+  status       String // PLANNED|DISPATCHED|IN_TRANSIT|COMPLETED|CANCELED
+  plannedStart DateTime? @map("planned_start") @db.Timestamptz(6)
+  plannedEnd   DateTime? @map("planned_end") @db.Timestamptz(6)
+  actualStart  DateTime? @map("actual_start") @db.Timestamptz(6)
+  actualEnd    DateTime? @map("actual_end") @db.Timestamptz(6)
+  notes        String?
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  originHub       Hub?               @relation("ShipmentOrigin", fields: [hubOriginId], references: [id], onDelete: SetNull)
+  destHub         Hub?               @relation("ShipmentDest", fields: [hubDestId], references: [id], onDelete: SetNull)
+  assignment      VehicleAssignment?
+  shipmentOrders  ShipmentOrder[]
+  routeStops      RouteStop[]
+  history         ShipmentHistory[]
+  shipmentScans   ShipmentScan[]
+  partnerMappings PartnerMapping[]
+  exceptionCases  ExceptionCase[]
+
+  @@index([status], map: "idx_shipment_status")
+  @@index([plannedStart], map: "idx_shipment_planned_start")
+  @@map("shipments")
+}
+
+model ShipmentOrder {
+  shipmentId String @map("shipment_id") @db.Uuid
+  orderId    String @map("order_id") @db.Uuid
+  sequenceNo Int    @map("sequence_no")
+
+  shipment Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  order    Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@id([shipmentId, orderId])
+  @@index([shipmentId, sequenceNo], map: "idx_so_shipment_seq")
+  @@map("shipment_orders")
+}
+
+model RouteStop {
+  id         String    @id @default(uuid()) @db.Uuid
+  shipmentId String    @map("shipment_id") @db.Uuid
+  orderId    String?   @map("order_id") @db.Uuid
+  stopType   String    @map("stop_type") // PICKUP|DELIVERY|HUB|BREAK
+  address    String?
+  lat        Decimal?  @db.Decimal(9, 6)
+  lng        Decimal?  @db.Decimal(9, 6)
+  sequenceNo Int       @map("sequence_no")
+  eta        DateTime? @db.Timestamptz(6)
+  ata        DateTime? @db.Timestamptz(6)
+  status     String // PENDING|ARRIVED|DONE|FAILED|SKIPPED
+  note       String?
+
+  shipment Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  order    Order?   @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  events          StopEvent[]
+  pod             ProofOfDelivery?
+  codTransactions CODTransaction[]
+  exceptionCases  ExceptionCase[]
+
+  @@index([shipmentId, sequenceNo], map: "idx_rs_shipment_seq")
+  @@index([status], map: "idx_rs_status")
+  @@map("route_stops")
+}
+
+model ShipmentHistory {
+  id         BigInt   @id @default(autoincrement()) @db.BigInt
+  shipmentId String   @map("shipment_id") @db.Uuid
+  fromStatus String?  @map("from_status")
+  toStatus   String?  @map("to_status")
+  changedBy  String?  @map("changed_by") @db.Uuid
+  note       String?
+  changedAt  DateTime @default(now()) @map("changed_at") @db.Timestamptz(6)
+
+  shipment Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  user     User?    @relation("ShipmentHistoryChangedBy", fields: [changedBy], references: [id], onDelete: SetNull)
+
+  @@index([shipmentId, changedAt(sort: Desc)], map: "idx_sh_shipment_time")
+  @@map("shipment_history")
+}
+
+// =============== TRACKING & POD ===============
+model StopEvent {
+  id          BigInt   @id @default(autoincrement()) @db.BigInt
+  routeStopId String   @map("route_stop_id") @db.Uuid
+  eventType   String   @map("event_type")
+  payload     Json?
+  createdBy   String?  @map("created_by") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  routeStop RouteStop @relation(fields: [routeStopId], references: [id], onDelete: Cascade)
+  user      User?     @relation("StopEventCreatedBy", fields: [createdBy], references: [id], onDelete: SetNull)
+
+  @@index([routeStopId, createdAt(sort: Desc)], map: "idx_se_stop_time")
+  @@index([eventType], map: "idx_se_type")
+  @@map("stop_events")
+}
+
+model ProofOfDelivery {
+  id          BigInt   @id @default(autoincrement()) @db.BigInt
+  routeStopId String   @unique @map("route_stop_id") @db.Uuid
+  photos      Json?
+  signature   String?
+  codReceived Decimal? @map("cod_received") @db.Decimal(18, 4)
+  note        String?
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  routeStop RouteStop @relation(fields: [routeStopId], references: [id], onDelete: Cascade)
+
+  @@map("proof_of_delivery")
+}
+
+// =============== WAREHOUSE SCANS ===============
+model OrderScan {
+  id        BigInt   @id @default(autoincrement()) @db.BigInt
+  orderId   String   @map("order_id") @db.Uuid
+  hubId     String   @map("hub_id") @db.Uuid
+  direction String // INBOUND|OUTBOUND
+  scannedBy String?  @map("scanned_by") @db.Uuid
+  scannedAt DateTime @default(now()) @map("scanned_at") @db.Timestamptz(6)
+  note      String?
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  hub   Hub   @relation(fields: [hubId], references: [id], onDelete: Cascade)
+  user  User? @relation("OrderScanBy", fields: [scannedBy], references: [id], onDelete: SetNull)
+
+  @@index([orderId, scannedAt(sort: Desc)], map: "idx_os_order_time")
+  @@index([hubId, scannedAt(sort: Desc)], map: "idx_os_hub_time")
+  @@map("order_scans")
+}
+
+model ShipmentScan {
+  id         BigInt   @id @default(autoincrement()) @db.BigInt
+  shipmentId String   @map("shipment_id") @db.Uuid
+  hubId      String   @map("hub_id") @db.Uuid
+  direction  String // INBOUND|OUTBOUND
+  scannedBy  String?  @map("scanned_by") @db.Uuid
+  scannedAt  DateTime @default(now()) @map("scanned_at") @db.Timestamptz(6)
+  note       String?
+
+  shipment Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  hub      Hub      @relation(fields: [hubId], references: [id], onDelete: Cascade)
+  user     User?    @relation("ShipmentScanBy", fields: [scannedBy], references: [id], onDelete: SetNull)
+
+  @@index([shipmentId, scannedAt(sort: Desc)], map: "idx_ss_shipment_time")
+  @@map("shipment_scans")
+}
+
+// =============== FINANCE / PRICING ===============
+model CODTransaction {
+  id          String   @id @default(uuid()) @db.Uuid
+  orderId     String?  @map("order_id") @db.Uuid
+  routeStopId String?  @map("route_stop_id") @db.Uuid
+  driverId    String?  @map("driver_id") @db.Uuid
+  amount      Decimal  @db.Decimal(18, 4)
+  collectedAt DateTime @default(now()) @map("collected_at") @db.Timestamptz(6)
+
+  order     Order?     @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  routeStop RouteStop? @relation(fields: [routeStopId], references: [id], onDelete: SetNull)
+  driver    Driver?    @relation(fields: [driverId], references: [id], onDelete: SetNull)
+
+  @@index([driverId, collectedAt], map: "idx_cod_driver_time")
+  @@map("cod_transactions")
+}
+
+model CODSettlement {
+  id          String   @id @default(uuid()) @db.Uuid
+  driverId    String?  @map("driver_id") @db.Uuid
+  totalAmount Decimal  @map("total_amount") @db.Decimal(18, 4)
+  settledAt   DateTime @default(now()) @map("settled_at") @db.Timestamptz(6)
+  note        String?
+
+  driver Driver? @relation(fields: [driverId], references: [id], onDelete: SetNull)
+  claims Claim[] @relation("ClaimPaidVia")
+
+  @@index([driverId, settledAt], map: "idx_settle_driver_time")
+  @@map("cod_settlements")
+}
+
+model Tariff {
+  id             String    @id @default(uuid()) @db.Uuid
+  orgId          String    @map("org_id") @db.Uuid
+  serviceLevelId String    @map("service_level_id") @db.Uuid
+  name           String
+  baseKm         Int?      @map("base_km")
+  pricePerKm     Decimal?  @map("price_per_km") @db.Decimal(18, 4)
+  weightStep     Decimal?  @map("weight_step") @db.Decimal(18, 4)
+  pricePerKg     Decimal?  @map("price_per_kg") @db.Decimal(18, 4)
+  effectiveFrom  DateTime? @map("effective_from") @db.Timestamptz(6)
+  effectiveTo    DateTime? @map("effective_to") @db.Timestamptz(6)
+  active         Boolean   @default(true)
+  createdBy      String    @map("created_by") @db.Uuid
+  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  org              Org                @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  serviceLevel     ConfigServiceLevel @relation(fields: [serviceLevelId], references: [id])
+  creator          User               @relation("TariffCreatedBy", fields: [createdBy], references: [id])
+  tariffSurcharges TariffSurcharge[]
+
+  @@index([orgId, active], map: "idx_tariff_org_active")
+  @@map("tariffs")
+}
+
+model Surcharge {
+  id        String   @id @default(uuid()) @db.Uuid
+  orgId     String   @map("org_id") @db.Uuid
+  code      String   @unique
+  name      String
+  formula   String?
+  active    Boolean  @default(true)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  org              Org               @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  tariffSurcharges TariffSurcharge[]
+
+  @@index([orgId, active], map: "idx_surcharge_org_active")
+  @@map("surcharges")
+}
+
+model TariffSurcharge {
+  tariffId    String  @map("tariff_id") @db.Uuid
+  surchargeId String  @map("surcharge_id") @db.Uuid
+  scope       String?
+  note        String?
+
+  tariff    Tariff    @relation(fields: [tariffId], references: [id], onDelete: Cascade)
+  surcharge Surcharge @relation(fields: [surchargeId], references: [id], onDelete: Cascade)
+
+  @@id([tariffId, surchargeId])
+  @@map("tariff_surcharges")
+}
+
+// =============== REPORTING / ANALYTICS ===============
+model ReportDailyOps {
+  id                 BigInt   @id @default(autoincrement()) @db.BigInt
+  orgId              String?  @map("org_id") @db.Uuid
+  reportDate         DateTime @map("report_date") @db.Timestamptz(6)
+  hubId              String?  @map("hub_id") @db.Uuid
+  ordersCreated      Int      @default(0) @map("orders_created")
+  ordersDelivered    Int      @default(0) @map("orders_delivered")
+  ordersFailed       Int      @default(0) @map("orders_failed")
+  avgDeliveryTimeSec BigInt?  @map("avg_delivery_time_sec") @db.BigInt
+  vehicleKmEstimated Decimal? @map("vehicle_km_estimated") @db.Decimal(18, 4)
+
+  org Org? @relation(fields: [orgId], references: [id], onDelete: SetNull)
+  hub Hub? @relation(fields: [hubId], references: [id], onDelete: SetNull)
+
+  @@index([reportDate, hubId], map: "idx_rdo_date_hub")
+  @@index([orgId, reportDate], map: "idx_rdo_org_date")
+  @@map("report_daily_ops")
+}
+
+model ReportDriverPerformance {
+  id                 BigInt   @id @default(autoincrement()) @db.BigInt
+  reportDate         DateTime @map("report_date") @db.Timestamptz(6)
+  driverId           String   @map("driver_id") @db.Uuid
+  shipmentsCompleted Int      @default(0) @map("shipments_completed")
+  stopsDone          Int      @default(0) @map("stops_done")
+  failRate           Decimal? @map("fail_rate") @db.Decimal(18, 4)
+
+  driver Driver @relation(fields: [driverId], references: [id], onDelete: Cascade)
+
+  @@index([reportDate, driverId], map: "idx_rdp_date_driver")
+  @@map("report_driver_performance")
+}
+
+model ReportVehicleUsage {
+  id         BigInt   @id @default(autoincrement()) @db.BigInt
+  reportDate DateTime @map("report_date") @db.Timestamptz(6)
+  vehicleId  String   @map("vehicle_id") @db.Uuid
+  totalKm    Decimal? @map("total_km") @db.Decimal(18, 4)
+  totalHours Decimal? @map("total_hours") @db.Decimal(18, 4)
+
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@index([reportDate, vehicleId], map: "idx_rvu_date_vehicle")
+  @@map("report_vehicle_usage")
+}
+
+// =============== INTEGRATION / PARTNERS / MAP ===============
+model Partner {
+  id        String   @id @default(uuid()) @db.Uuid
+  orgId     String   @map("org_id") @db.Uuid
+  name      String   @unique
+  type      String // ecommerce|3pl|erp|other
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  org      Org              @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  webhooks Webhook[]
+  apiKeys  ApiPartnerKey[]
+  mappings PartnerMapping[]
+
+  @@index([orgId, active], map: "idx_partner_org_active")
+  @@map("partners")
+}
+
+model Webhook {
+  id        String   @id @default(uuid()) @db.Uuid
+  partnerId String   @map("partner_id") @db.Uuid
+  orgId     String   @map("org_id") @db.Uuid
+  url       String
+  secret    String?
+  active    Boolean  @default(true)
+  createdBy String   @map("created_by") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  partner Partner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  org     Org     @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  creator User    @relation("WebhookCreatedBy", fields: [createdBy], references: [id], onDelete: Cascade)
+
+  @@index([partnerId, active], map: "idx_webhook_partner_active")
+  @@index([orgId], map: "idx_webhook_org")
+  @@map("webhooks")
+}
+
+model ApiPartnerKey {
+  id        String   @id @default(uuid()) @db.Uuid
+  partnerId String   @map("partner_id") @db.Uuid
+  orgId     String   @map("org_id") @db.Uuid
+  key       String   @unique
+  active    Boolean  @default(true)
+  createdBy String   @map("created_by") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  partner Partner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  org     Org     @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  creator User    @relation("ApiPartnerKeyCreatedBy", fields: [createdBy], references: [id], onDelete: Cascade)
+
+  @@index([partnerId, active], map: "idx_apikey_partner_active")
+  @@index([orgId], map: "idx_apikey_org")
+  @@map("api_partner_keys")
+}
+
+model PartnerMapping {
+  id           String   @id @default(uuid()) @db.Uuid
+  partnerId    String   @map("partner_id") @db.Uuid
+  orgId        String   @map("org_id") @db.Uuid
+  entity       String // order|shipment|hub|customer
+  externalCode String   @map("external_code")
+  orderId      String?  @map("order_id") @db.Uuid
+  shipmentId   String?  @map("shipment_id") @db.Uuid
+  hubId        String?  @map("hub_id") @db.Uuid
+  customerId   String?  @map("customer_id") @db.Uuid
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  partner  Partner   @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  org      Org       @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  order    Order?    @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  shipment Shipment? @relation(fields: [shipmentId], references: [id], onDelete: SetNull)
+  hub      Hub?      @relation(fields: [hubId], references: [id], onDelete: SetNull)
+  customer Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+
+  @@unique([partnerId, entity, externalCode], map: "uq_pm_partner_entity_code")
+  @@index([partnerId, orgId, entity], map: "idx_pm_partner_org_entity")
+  @@map("partner_mappings")
+}
+
+model GeocodingCache {
+  id          String    @id @default(uuid()) @db.Uuid
+  orgId       String    @map("org_id") @db.Uuid
+  requestedBy String?   @map("requested_by") @db.Uuid
+  raw         String
+  lat         Decimal?  @db.Decimal(9, 6)
+  lng         Decimal?  @db.Decimal(9, 6)
+  provider    String?
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  ttlUntil    DateTime? @map("ttl_until") @db.Timestamptz(6)
+
+  org       Org   @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  requester User? @relation("GeoRequestedBy", fields: [requestedBy], references: [id], onDelete: SetNull)
+
+  @@unique([raw, provider, orgId], map: "uq_geocode_raw_provider_org")
+  @@index([ttlUntil], map: "idx_geocode_ttl")
+  @@map("geocoding_cache")
+}
+
+model DistanceMatrixCache {
+  id          String    @id @default(uuid()) @db.Uuid
+  orgId       String    @map("org_id") @db.Uuid
+  requestedBy String?   @map("requested_by") @db.Uuid
+  fromKey     String    @map("from_key")
+  toKey       String    @map("to_key")
+  distanceM   Int?      @map("distance_m")
+  durationS   Int?      @map("duration_s")
+  provider    String?
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  ttlUntil    DateTime? @map("ttl_until") @db.Timestamptz(6)
+
+  org       Org   @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  requester User? @relation("DistRequestedBy", fields: [requestedBy], references: [id], onDelete: SetNull)
+
+  @@unique([fromKey, toKey, provider, orgId], map: "uq_dist_from_to_provider_org")
+  @@index([ttlUntil], map: "idx_dist_ttl")
+  @@map("distance_matrix_cache")
+}
+
+// =============== SCHEDULING / CAPACITY ===============
+model DriverShift {
+  id       String   @id @default(uuid()) @db.Uuid
+  driverId String   @map("driver_id") @db.Uuid
+  startAt  DateTime @map("start_at") @db.Timestamptz(6)
+  endAt    DateTime @map("end_at") @db.Timestamptz(6)
+  notes    String?
+
+  driver Driver @relation(fields: [driverId], references: [id], onDelete: Cascade)
+
+  @@index([driverId, startAt], map: "idx_shift_driver_start")
+  @@map("driver_shifts")
+}
+
+model CapacityPlan {
+  id             String   @id @default(uuid()) @db.Uuid
+  orgId          String?  @map("org_id") @db.Uuid
+  date           DateTime @db.Timestamptz(6)
+  vehiclesNeeded Int      @map("vehicles_needed")
+  driversNeeded  Int      @map("drivers_needed")
+  notes          String?
+
+  org Org? @relation(fields: [orgId], references: [id], onDelete: SetNull)
+
+  @@index([date, orgId], map: "idx_cp_date_org")
+  @@map("capacity_plans")
+}
+
+// =============== CUSTOMER PORTAL ===============
+model Customer {
+  id        String   @id @default(uuid()) @db.Uuid
+  orgId     String?  @map("org_id") @db.Uuid
+  name      String
+  email     String?
+  phone     String?
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  org       Org?              @relation(fields: [orgId], references: [id], onDelete: SetNull)
+  addresses CustomerAddress[]
+  mappings  PartnerMapping[]
+
+  @@index([orgId], map: "idx_customer_org")
+  @@map("customers")
+}
+
+model CustomerAddress {
+  id         String   @id @default(uuid()) @db.Uuid
+  customerId String   @map("customer_id") @db.Uuid
+  label      String?
+  address    String
+  lat        Decimal? @db.Decimal(9, 6)
+  lng        Decimal? @db.Decimal(9, 6)
+  isDefault  Boolean  @default(false) @map("is_default")
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([customerId], map: "idx_caddr_customer")
+  @@map("customer_addresses")
+}
+
+// =============== EXCEPTIONS / CLAIMS ===============
+model ExceptionCase {
+  id          String    @id @default(uuid()) @db.Uuid
+  orgId       String    @map("org_id") @db.Uuid
+  createdBy   String?   @map("created_by") @db.Uuid
+  orderId     String?   @map("order_id") @db.Uuid
+  shipmentId  String?   @map("shipment_id") @db.Uuid
+  routeStopId String?   @map("route_stop_id") @db.Uuid
+  vehicleId   String?   @map("vehicle_id") @db.Uuid
+  driverId    String?   @map("driver_id") @db.Uuid
+  reason      String
+  status      String // open|investigating|resolved|rejected
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  resolvedAt  DateTime? @map("resolved_at") @db.Timestamptz(6)
+  notes       String?
+
+  org       Org        @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  creator   User?      @relation("ExceptionCreatedBy", fields: [createdBy], references: [id], onDelete: SetNull)
+  order     Order?     @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  shipment  Shipment?  @relation(fields: [shipmentId], references: [id], onDelete: SetNull)
+  routeStop RouteStop? @relation(fields: [routeStopId], references: [id], onDelete: SetNull)
+  vehicle   Vehicle?   @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
+  driver    Driver?    @relation(fields: [driverId], references: [id], onDelete: SetNull)
+  claims    Claim[]
+
+  @@index([orgId, status, createdAt], map: "idx_exc_org_status_time")
+  @@index([driverId], map: "idx_exc_driver")
+  @@map("exception_cases")
+}
+
+model Claim {
+  id               String   @id @default(uuid()) @db.Uuid
+  orgId            String   @map("org_id") @db.Uuid
+  orderId          String   @map("order_id") @db.Uuid
+  exceptionId      String   @map("exception_id") @db.Uuid
+  createdBy        String?  @map("created_by") @db.Uuid
+  approvedBy       String?  @map("approved_by") @db.Uuid
+  amount           Decimal  @db.Decimal(18, 4)
+  reason           String
+  status           String // open|approved|paid|rejected
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  paidSettlementId String?  @map("paid_settlement_id") @db.Uuid
+  driverId         String?  @map("driver_id") @db.Uuid
+
+  org       Org            @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  order     Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  exception ExceptionCase  @relation(fields: [exceptionId], references: [id], onDelete: Cascade)
+  creator   User?          @relation("ClaimCreatedBy", fields: [createdBy], references: [id], onDelete: SetNull)
+  approver  User?          @relation("ClaimApprovedBy", fields: [approvedBy], references: [id], onDelete: SetNull)
+  paidVia   CODSettlement? @relation("ClaimPaidVia", fields: [paidSettlementId], references: [id], onDelete: SetNull)
+
+  // Driver linkage (with opposite on Driver.claims)
+  driver Driver? @relation("ClaimDriver", fields: [driverId], references: [id], onDelete: SetNull)
+
+  @@index([orgId, status, createdAt], map: "idx_claim_org_status_time")
+  @@index([driverId], map: "idx_claim_driver")
+  @@map("claims")
+}
+
+// =============== CONFIG / NOTIFY / DOCS / AUDIT ===============
+model ConfigRegion {
+  id        String   @id @default(uuid()) @db.Uuid
+  code      String   @unique
+  name      String
+  active    Boolean  @default(true)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@map("config_regions")
+}
+
+model ConfigServiceLevel {
+  id        String   @id @default(uuid()) @db.Uuid
+  orgId     String   @map("org_id") @db.Uuid
+  code      String   @unique
+  name      String
+  active    Boolean  @default(true)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  org     Org      @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  tariffs Tariff[]
+
+  @@index([orgId], map: "idx_csl_org")
+  @@map("config_service_levels")
+}
+
+model ConfigReport {
+  id           String   @id @default(uuid()) @db.Uuid
+  orgId        String   @map("org_id") @db.Uuid
+  code         String   @unique
+  name         String
+  scheduleCron String?  @map("schedule_cron")
+  isEnabled    Boolean  @default(true) @map("is_enabled")
+  recipients   String?
+  createdBy    String   @map("created_by") @db.Uuid
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  org     Org  @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  creator User @relation("ConfigReportCreatedBy", fields: [createdBy], references: [id], onDelete: Cascade)
+
+  @@index([orgId, isEnabled], map: "idx_cr_org_enabled")
+  @@map("config_reports")
+}
+
+model Notification {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  channel   String // EMAIL|SMS|PUSH|IN_APP
+  template  String?
+  payload   Json?
+  status    String // QUEUED|SENT|FAILED
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  sentAt    DateTime? @map("sent_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt], map: "idx_notify_user_time")
+  @@index([status], map: "idx_notify_status")
+  @@map("notifications")
+}
+
+model Document {
+  id          String   @id @default(uuid()) @db.Uuid
+  ownerUserId String?  @map("owner_user_id") @db.Uuid
+  entityType  String   @map("entity_type")
+  entityId    String   @map("entity_id")
+  url         String
+  mimeType    String?  @map("mime_type")
+  sizeBytes   Int?     @map("size_bytes")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  owner User? @relation(fields: [ownerUserId], references: [id], onDelete: SetNull)
+
+  @@index([entityType, entityId], map: "idx_doc_entity")
+  @@map("documents")
+}
+
+model AuditLog {
+  id          BigInt   @id @default(autoincrement()) @db.BigInt
+  actorUserId String?  @map("actor_user_id") @db.Uuid
+  entityType  String   @map("entity_type")
+  entityId    String   @map("entity_id")
+  action      String
+  diff        Json?
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  actor User? @relation("AuditActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([entityType, entityId, createdAt], map: "idx_audit_entity_time")
+  @@index([actorUserId, createdAt], map: "idx_audit_actor_time")
+  @@map("audit_log")
 }
