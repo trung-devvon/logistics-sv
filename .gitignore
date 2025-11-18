@@ -55,3 +55,7 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 /generated/prisma
 
 test.md
+
+/prisma/seed.ts
+/prisma/roleData.ts
+/prisma/permissionData.ts
