@@ -10,6 +10,7 @@ import { PrismaModule } from './core/prisma/prisma.module';
 import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { MailModule } from './integrations/mail/mail.module';
+import { ApiKeysModule } from './modules/api-keys/api-keys.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -29,7 +30,8 @@ import { MailModule } from './integrations/mail/mail.module';
     PrismaModule,
     UsersModule,
     AuthModule,
-    MailModule
+    MailModule,
+    ApiKeysModule
   ],
   controllers: [AppController],
   providers: [AppService],

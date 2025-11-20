@@ -11,11 +11,15 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RolesGuard } from './guards/role.guard';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
+import { ApiKeyAuthGuard } from './guards/api-key.guard';
+import { ApiKeyStrategy } from './strategies/api-key.strategy';
+import { ApiKeysModule } from '../api-keys/api-keys.module';
 
 @Global()
 @Module({
   imports:[
     UsersModule,
+    ApiKeysModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -34,13 +38,16 @@ import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
     JwtAuthGuard,
     RolesGuard,
     JwtRefreshGuard,
-    JwtRefreshStrategy
+    JwtRefreshStrategy,
+    ApiKeyStrategy,
+    ApiKeyAuthGuard
   ],
   exports: [
     AuthService,
     JwtAuthGuard, 
     RolesGuard, 
-    JwtRefreshGuard
+    JwtRefreshGuard,
+    ApiKeyAuthGuard
   ],
 })
 export class AuthModule {}
