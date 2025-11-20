@@ -9,6 +9,7 @@ import { validationSchema } from './core/config/validation.schema';
 import { PrismaModule } from './core/prisma/prisma.module';
 import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { MailModule } from './integrations/mail/mail.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -28,6 +29,7 @@ import { AuthModule } from './modules/auth/auth.module';
     PrismaModule,
     UsersModule,
     AuthModule,
+    MailModule
   ],
   controllers: [AppController],
   providers: [AppService],
