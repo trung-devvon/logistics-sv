@@ -10,7 +10,7 @@ import {
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
 import { LoginDto } from './dto/login.dto';
-import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
+import { JwtRefreshGuard } from '../../common/guards/jwt-refresh.guard';
 
 import {
   ApiTags,
@@ -23,8 +23,11 @@ import {
   ApiForbiddenResponse,
   ApiConflictResponse,
 } from '@nestjs/swagger';
-import { EmailForgotPasswordDto, PasswordResetDto } from './dto/password-reset.dto';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import {
+  EmailForgotPasswordDto,
+  PasswordResetDto,
+} from './dto/password-reset.dto';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { ChangePasswordDto } from './dto/change-password.dto';
 
 @ApiTags('Auth')
@@ -53,7 +56,9 @@ export class AuthController {
   @ApiOperation({ summary: 'Làm mới access token và refresh token' })
   @ApiBearerAuth('refresh-token')
   @ApiOkResponse({ description: 'Làm mới token thành công' })
-  @ApiForbiddenResponse({ description: 'Refresh token không hợp lệ hoặc đã hết hạn' })
+  @ApiForbiddenResponse({
+    description: 'Refresh token không hợp lệ hoặc đã hết hạn',
+  })
   async refreshTokens(@Request() req: any) {
     const { id, refreshTokenId } = req.user;
 
@@ -73,7 +78,7 @@ export class AuthController {
     const response = await this.authService.forgotPassword(dto.email);
     return {
       message: response.message,
-    }
+    };
   }
 
   @HttpCode(HttpStatus.OK)
@@ -82,10 +87,14 @@ export class AuthController {
   @ApiOkResponse({ description: 'Đặt lại mật khẩu thành công' })
   @ApiBadRequestResponse({ description: 'OTP không hợp lệ hoặc đã hết hạn' })
   async resetPassword(@Body() dto: PasswordResetDto) {
-    const response = await this.authService.resetPassword(dto.email, dto.otp, dto.newPassword);
+    const response = await this.authService.resetPassword(
+      dto.email,
+      dto.otp,
+      dto.newPassword,
+    );
     return {
       message: response.message,
-    }
+    };
   }
 
   @UseGuards(JwtAuthGuard)
@@ -111,7 +120,7 @@ export class AuthController {
     const data = await this.authService.logout(refreshTokenId);
 
     return {
-      message: data.message
+      message: data.message,
     };
   }
 }

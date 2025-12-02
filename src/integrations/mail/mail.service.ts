@@ -26,8 +26,11 @@ export class MailService {
    */
   async sendUserConfirmation(email: string, name: string, otp: string) {
     // 1. Tìm đường dẫn đến file template
-    const templatePath = path.join(process.cwd(), 'src/integrations/mail/templates/reset-password.ejs');
-    
+    const templatePath = path.join(
+      process.cwd(),
+      'src/integrations/mail/templates/reset-password.ejs',
+    );
+
     // 2. Render template với dữ liệu
     const html = await ejs.renderFile(templatePath, {
       name: name || 'Quý khách',

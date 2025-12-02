@@ -2,8 +2,10 @@ import { IsNotEmpty, IsString, MinLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class LoginDto {
-  
-  @ApiProperty({ description: 'Nhập Email hoặc Số điện thoại', example: 'user@example.com' })
+  @ApiProperty({
+    description: 'Nhập Email hoặc Số điện thoại',
+    example: 'user@example.com',
+  })
   @IsString()
   @IsNotEmpty({ message: 'Tài khoản không được để trống' })
   identifier: string;

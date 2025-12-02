@@ -28,7 +28,8 @@ export class ApiKeysService {
       id: apiKeyRecord.id,
       name: apiKeyRecord.name,
       apiKey: fullKey, // Client sẽ dùng chuỗi này để gọi API
-      message: 'Đây là API Key duy nhất của bạn. Hãy lưu nó lại vì hệ thống sẽ không hiển thị lại Private Key.',
+      message:
+        'Đây là API Key duy nhất của bạn. Hãy lưu nó lại vì hệ thống sẽ không hiển thị lại Private Key.',
     };
   }
 
@@ -41,7 +42,7 @@ export class ApiKeysService {
     // tách 2
     const tokenPart = rawKey.slice(prefix.length);
     const [publicKey, privateKey] = tokenPart.split('.');
-    
+
     if (!publicKey || !privateKey) {
       return null;
     }
@@ -65,7 +66,4 @@ export class ApiKeysService {
     // F. Hợp lệ
     return apiKeyRecord;
   }
-
-
-  
 }

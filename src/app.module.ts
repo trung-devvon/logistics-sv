@@ -3,7 +3,6 @@ import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
-
 import configuration from './core/config/configuration';
 import { validationSchema } from './core/config/validation.schema';
 import { PrismaModule } from './core/prisma/prisma.module';
@@ -11,6 +10,7 @@ import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { MailModule } from './integrations/mail/mail.module';
 import { ApiKeysModule } from './modules/api-keys/api-keys.module';
+import { OrgModule } from './modules/org/org.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -30,8 +30,9 @@ import { ApiKeysModule } from './modules/api-keys/api-keys.module';
     PrismaModule,
     UsersModule,
     AuthModule,
+    OrgModule,
     MailModule,
-    ApiKeysModule
+    ApiKeysModule,
   ],
   controllers: [AppController],
   providers: [AppService],

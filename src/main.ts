@@ -18,9 +18,8 @@ async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
     new FastifyAdapter(),
-
   );
-  
+
   const configService = app.get(ConfigService);
 
   // Validation global
@@ -58,9 +57,10 @@ async function bootstrap() {
   const nodeEnv = configService.get<string>('nodeEnv');
   const appName = configService.get<string>('app.name');
 
-  const baseUrl = nodeEnv === 'production'
-    ? `https://${configService.get<string>('app.domain')}`
-    : `http://${host}:${port}`;
+  const baseUrl =
+    nodeEnv === 'production'
+      ? `https://${configService.get<string>('app.domain')}`
+      : `http://${host}:${port}`;
 
   setupSwagger(app);
 

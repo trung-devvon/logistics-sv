@@ -2,7 +2,6 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { NestFastifyApplication } from '@nestjs/platform-fastify';
 
-
 export function setupSwagger(app: NestFastifyApplication): void {
   const configService = app.get(ConfigService);
   const nodeEnv = configService.get<string>('nodeEnv');
@@ -17,26 +16,26 @@ export function setupSwagger(app: NestFastifyApplication): void {
     .setDescription('API documentation for My Logistics application')
     .setVersion('1.0.0')
     .addBearerAuth(
-    {
-      type: 'http',
-      scheme: 'bearer',
-      bearerFormat: 'JWT',
-      name: 'JWT',
-      description: 'Enter access token',
-      in: 'header',
-    },
-    'access-token', // tên này sẽ dùng cho các endpoint bình thường
-  )
-  .addBearerAuth(
-    {
-      type: 'http',
-      scheme: 'bearer',
-      bearerFormat: 'JWT',
-      description: 'Enter refresh token đây',
-      in: 'header',
-    },
-    'refresh-token', // tên này khớp với @ApiBearerAuth('refresh-token') ở trên
-  )
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'JWT',
+        description: 'Enter access token',
+        in: 'header',
+      },
+      'access-token', // tên này sẽ dùng cho các endpoint bình thường
+    )
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        description: 'Enter refresh token đây',
+        in: 'header',
+      },
+      'refresh-token', // tên này khớp với @ApiBearerAuth('refresh-token') ở trên
+    )
     .addServer(baseUrl)
     .build();
 
@@ -59,5 +58,4 @@ export function setupSwagger(app: NestFastifyApplication): void {
     },
     staticCSP: true,
   });
-
 }
