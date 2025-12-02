@@ -1,7 +1,7 @@
 export default () => ({
   nodeEnv: process.env.NODE_ENV || 'test',
   app: {
-    name: process.env.APP_NAME || 'trung-logistics',
+    name: process.env.APP_NAME || 'logistics',
     port: parseInt(process.env.PORT, 10) || 3000,
     host: process.env.HOST || '0.0.0.0',
   },
