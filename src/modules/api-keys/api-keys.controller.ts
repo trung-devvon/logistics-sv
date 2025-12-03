@@ -5,6 +5,8 @@ import {
   UseGuards,
   Request,
   Get,
+  Delete,
+  Param,
 } from '@nestjs/common';
 import { ApiKeysService } from './api-keys.service';
 import { Roles } from '../../common/decorators/roles.decorator';

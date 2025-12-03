@@ -68,7 +68,11 @@ export class OrgController {
   })
   @ApiBadRequestResponse({ description: 'Bad Request - invalid input data' })
   async createOrg(@Body() dto: CreateOrgDto, @CurrentUser() me: JwtUser) {
-    return this.service.createOrg(dto, me.sub);
+    const res = await this.service.createOrg(dto, me.sub);
+    return {
+      message: 'Organization created successfully',
+      data: res,
+    };
   }
 
   @Get()
@@ -100,7 +104,11 @@ export class OrgController {
     @Query('cursor') cursor?: string,
     @Query('take') take = '20',
   ) {
-    return this.service.listOrgs({ q, cursor, take: Number(take) });
+    const res = await this.service.listOrgs({ q, cursor, take: Number(take) });
+    return {
+      message: 'Get Organizations successfully',
+      data: res,
+    };
   }
 
   @Get(':id')
@@ -119,7 +127,11 @@ export class OrgController {
   @Permissions('org.read')
   @ApiOkResponse({ type: OrgBrief })
   async getOrg(@Param('id', new ParseUUIDPipe()) id: string) {
-    return this.service.getOrg(id);
+    const res = await this.service.getOrg(id);
+    return {
+      message: 'Get Organization successfully',
+      data: res,
+    };
   }
   @Roles('SUPER_ADMIN', 'ADMIN', 'MANAGER')
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -141,7 +153,11 @@ export class OrgController {
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() dto: UpdateOrgDto,
   ) {
-    return this.service.updateOrg(id, dto);
+    const res = await this.service.updateOrg(id, dto);
+    return {
+      message: 'Organization updated successfully',
+      data: res,
+    };
   }
   @Roles('SUPER_ADMIN', 'ADMIN', 'MANAGER')
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -160,7 +176,8 @@ export class OrgController {
     description: 'Forbidden - user does not have required role or permission',
   })
   async deleteOrg(@Param('id', new ParseUUIDPipe()) id: string) {
-    return this.service.deleteOrg(id);
+    const res = await this.service.deleteOrg(id);
+    return { data: res, message: 'Organization deleted successfully' };
   }
 
   // Members
@@ -181,7 +198,7 @@ export class OrgController {
   })
   async listMembers(@Param('id', new ParseUUIDPipe()) id: string) {
     const items = await this.service.listMembers(id);
-    return { items };
+    return { data: items, message: 'Get organization members successfully' };
   }
   @Roles('SUPER_ADMIN', 'ADMIN', 'MANAGER')
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -206,7 +223,8 @@ export class OrgController {
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() dto: AssignMemberDto,
   ) {
-    return this.service.assignMember(id, dto.userId);
+    const res = await this.service.assignMember(id, dto.userId);
+    return { data: res, message: 'User assigned to organization successfully' };
   }
   @Roles('SUPER_ADMIN', 'ADMIN', 'MANAGER')
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -231,7 +249,11 @@ export class OrgController {
     @Param('id', new ParseUUIDPipe()) id: string,
     @Param('userId', new ParseUUIDPipe()) userId: string,
   ) {
-    return this.service.removeMember(id, userId);
+    const res = await this.service.removeMember(id, userId);
+    return {
+      data: res,
+      message: 'User removed from organization successfully',
+    };
   }
 
   // My memberships
@@ -255,7 +277,11 @@ export class OrgController {
     },
   })
   async myMemberships(@CurrentUser() me: JwtUser) {
-    return this.service.myMemberships(me.sub);
+    const res = await this.service.myMemberships(me.sub);
+    return {
+      message: 'Get my organization memberships successfully',
+      data: res,
+    };
   }
 
   // Switch Org
@@ -277,6 +303,10 @@ export class OrgController {
     @Param('id', new ParseUUIDPipe()) id: string,
     @CurrentUser() me: JwtUser,
   ) {
-    return this.service.switchOrg(id, me.sub);
+    const res = await this.service.switchOrg(id, me.sub);
+    return {
+      message: 'Switched organization successfully',
+      data: res,
+    };
   }
 }
