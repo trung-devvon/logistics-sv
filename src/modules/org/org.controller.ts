@@ -44,7 +44,7 @@ import { CurrentUser } from '@/common/decorators/current-user.decorator';
 import { JwtUser } from '@/common/types/user.types';
 
 @ApiTags('Orgs')
-@ApiBearerAuth()
+@ApiBearerAuth('JWT-auth')
 @Controller('orgs')
 export class OrgController {
   constructor(private readonly service: OrgService) {}
