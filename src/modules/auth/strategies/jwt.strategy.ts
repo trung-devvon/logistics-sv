@@ -6,7 +6,7 @@ import { UsersService } from '@/modules/users/users.service';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
-    constructor(
+  constructor(
     private configService: ConfigService,
     private usersService: UsersService,
   ) {
@@ -26,6 +26,6 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     if (!user) {
       throw new UnauthorizedException('Người dùng không tồn tại');
     }
-    return user
+    return user;
   }
 }

@@ -11,13 +11,14 @@ import helmet from '@fastify/helmet';
 import compress from '@fastify/compress';
 import { ConfigService } from '@nestjs/config';
 import { ValidationPipe } from '@nestjs/common';
+import { setupSwagger } from './core/config/swagger.config';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
     new FastifyAdapter(),
   );
-  
+
   const configService = app.get(ConfigService);
 
   // Validation global
@@ -52,10 +53,15 @@ async function bootstrap() {
   // Start server
   const port = configService.get<number>('app.port');
   const host = configService.get<string>('app.host');
+  const nodeEnv = configService.get<string>('nodeEnv');
   const appName = configService.get<string>('app.name');
+
+  // Setup Swagger (async to allow dynamic imports)
+  await setupSwagger(app);
 
   await app.listen(port, host);
   console.log(`🚀 ${appName} is running on: http://${host}:${port}`);
+  console.log(`API DOCS : http://localhost:${port}/api-docs`);
   console.log(`📝 Environment: ${configService.get<string>('nodeEnv')}`);
 }
 bootstrap();

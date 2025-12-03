@@ -7,15 +7,21 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { LocalStrategy } from './strategies/local.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { RolesGuard } from './guards/role.guard';
-import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/role.guard';
+import { JwtRefreshGuard } from '../../common/guards/jwt-refresh.guard';
 import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
+import { ApiKeyAuthGuard } from '../../common/guards/api-key.guard';
+import { ApiKeyStrategy } from './strategies/api-key.strategy';
+import { ApiKeysModule } from '../api-keys/api-keys.module';
+import { OrgModule } from '../org/org.module';
 
 @Global()
 @Module({
-  imports:[
+  imports: [
     UsersModule,
+    OrgModule,
+    ApiKeysModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -28,19 +34,22 @@ import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
   ],
   controllers: [AuthController],
   providers: [
-    AuthService, // 
+    AuthService, //
     LocalStrategy, // xác thực user
     JwtStrategy, // xác thực token
     JwtAuthGuard,
     RolesGuard,
     JwtRefreshGuard,
-    JwtRefreshStrategy
+    JwtRefreshStrategy,
+    ApiKeyStrategy,
+    ApiKeyAuthGuard,
   ],
   exports: [
     AuthService,
-    JwtAuthGuard, 
-    RolesGuard, 
-    JwtRefreshGuard
+    JwtAuthGuard,
+    RolesGuard,
+    JwtRefreshGuard,
+    ApiKeyAuthGuard,
   ],
 })
 export class AuthModule {}

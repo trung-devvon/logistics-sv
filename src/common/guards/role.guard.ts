@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ROLES_KEY } from '../decorators/roles.decorator';
@@ -10,10 +13,10 @@ export class RolesGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
     // 2. Đọc "cái đánh dấu" @Roles() từ route
     // Nó sẽ lấy ra mảng ['ADMIN', 'MANAGER']
-    const requiredRoles = this.reflector.getAllAndOverride<string[]>(ROLES_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
+    const requiredRoles = this.reflector.getAllAndOverride<string[]>(
+      ROLES_KEY,
+      [context.getHandler(), context.getClass()],
+    );
 
     // if not @Roles()
     // skip check
@@ -29,8 +32,10 @@ export class RolesGuard implements CanActivate {
       return false;
     }
 
-    const roles = user.userRoles?.map((ur: { role?: { code: string } }) => ur.role?.code) ?? [];
+    const roles =
+      user.userRoles?.map((ur: { role?: { code: string } }) => ur.role?.code) ??
+      [];
 
-    return requiredRoles.some(role => roles.includes(role));
+    return requiredRoles.some((role) => roles.includes(role));
   }
 }

@@ -1,7 +1,6 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { PrismaService } from '@/core/prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 
 import * as argon2 from 'argon2';
 
@@ -32,14 +31,14 @@ export class UsersService {
         email,
         passwordHash: hashedPassword,
         fullName,
-        phone,    
+        phone,
       },
       select: {
         id: true,
         email: true,
         fullName: true,
         phone: true,
-        isActive: true
+        isActive: true,
       },
     });
     return newUser;
@@ -48,17 +47,14 @@ export class UsersService {
   async findOneByIdentifier(identifier: string) {
     return this.prisma.user.findFirst({
       where: {
-        OR: [
-          { email: identifier },
-          { phone: identifier },
-        ],
-      }
+        OR: [{ email: identifier }, { phone: identifier }],
+      },
     });
   }
 
   /**
-   * 
-   * @param id 
+   *
+   * @param id
    * @returns { id, email, fullName, phone, isActive, roles[code, permissions[code]] }
    */
   async findOneById(id: string) {
@@ -93,5 +89,4 @@ export class UsersService {
       },
     });
   }
-
 }

@@ -6,8 +6,10 @@ import { PrismaService } from '@/core/prisma/prisma.service'; // 1. Import Prism
 import { UsersService } from '@/modules/users/users.service'; // 2. Import UsersService
 
 @Injectable()
-export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
-  
+export class JwtRefreshStrategy extends PassportStrategy(
+  Strategy,
+  'jwt-refresh',
+) {
   constructor(
     private configService: ConfigService,
     private prisma: PrismaService, // 4. Inject PrismaService
@@ -19,10 +21,10 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh'
       ignoreExpiration: false, // BẮT BUỘC kiểm tra hết hạn
       // 7. Dùng REFRESH_SECRET
       secretOrKey: configService.get<string>('JWT_REFRESH_SECRET'),
-      
+
       // 8. (Quan trọng) Yêu cầu hàm validate() nhận cả 'request'
       // để có thể lấy token gốc
-      passReqToCallback: true, 
+      passReqToCallback: true,
     });
   }
 
@@ -47,7 +49,7 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh'
     if (!user || !user.isActive) {
       throw new UnauthorizedException('User không tồn tại hoặc đã bị khóa');
     }
-    
+
     // 13. Trả về user VÀ refreshTokenId
     // Passport sẽ gắn { ...user, refreshTokenId: payload.jti } vào req.user
     delete user.userRoles; // Không cần trả về cây phân quyền ở bước này
