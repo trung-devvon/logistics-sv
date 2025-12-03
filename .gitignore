@@ -59,3 +59,4 @@ test.md
 /prisma/seed.ts
 /prisma/roleData.ts
 /prisma/permissionData.ts
+/prisma/rolePermissionMap.ts

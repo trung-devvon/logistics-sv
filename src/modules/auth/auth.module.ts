@@ -14,13 +14,11 @@ import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
 import { ApiKeyAuthGuard } from '../../common/guards/api-key.guard';
 import { ApiKeyStrategy } from './strategies/api-key.strategy';
 import { ApiKeysModule } from '../api-keys/api-keys.module';
-import { OrgModule } from '../org/org.module';
 
 @Global()
 @Module({
   imports: [
     UsersModule,
-    OrgModule,
     ApiKeysModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({

@@ -17,11 +17,28 @@ export class ApiKeysController {
   constructor(private readonly apiKeysService: ApiKeysService) {}
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('SUPER_ADMIN', 'ADMIN', 'MANAGER')
+  @Roles('SUPER_ADMIN', 'ADMIN', 'MANAGER', 'USER')
   @Post()
   async create(@Request() req: any, @Body('name') name: string) {
     const userId = req.user.id;
     return this.apiKeysService.createApiKey(userId, name || 'Unnamed Key');
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('SUPER_ADMIN', 'ADMIN', 'MANAGER', 'USER')
+  @Get()
+  async list(@Request() req: any) {
+    const userId = req.user.id;
+    return this.apiKeysService.listApiKeys(userId);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('SUPER_ADMIN', 'ADMIN', 'MANAGER', 'USER')
+  @Delete(':id')
+  async revoke(@Request() req: any, @Param('id') id: string) {
+    const userId = req.user.id;
+    await this.apiKeysService.revokeApiKey(userId, id);
+    return { message: 'Đã thu hồi API Key thành công' };
   }
 
   /**
