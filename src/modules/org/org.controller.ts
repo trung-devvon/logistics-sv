@@ -42,6 +42,7 @@ import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import { RolesGuard } from '@/common/guards/role.guard';
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
 import { JwtUser } from '@/common/types/user.types';
+import { PermissionsGuard } from '@/common/guards/permissions.guard';
 
 @ApiTags('Orgs')
 @ApiBearerAuth('JWT-auth')
@@ -49,7 +50,7 @@ import { JwtUser } from '@/common/types/user.types';
 export class OrgController {
   constructor(private readonly service: OrgService) {}
   @Roles('SUPER_ADMIN', 'ADMIN', 'MANAGER')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
   @Post()
   @Permissions('org.create')
   @UseAudit({ entity: 'Org', action: AuditAction.Create })

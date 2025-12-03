@@ -7,7 +7,6 @@ import { AdvancedScopeGuard } from '@/common/guards/advanced-scope.guard';
 import { ScopeRepository } from '@/common/repository/scope.repository';
 import { OrgRepository } from './repos/org.repository';
 import { PermissionsGuard } from '@/common/guards/permissions.guard';
-import { APP_GUARD } from '@nestjs/core';
 
 @Module({
   imports: [JwtModule.register({})],
@@ -18,7 +17,7 @@ import { APP_GUARD } from '@nestjs/core';
     ScopeRepository,
     AuditRepository,
     AdvancedScopeGuard,
-    { provide: APP_GUARD, useClass: PermissionsGuard },
+    PermissionsGuard,
   ],
   exports: [OrgService, OrgRepository],
 })

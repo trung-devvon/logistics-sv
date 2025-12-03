@@ -37,6 +37,8 @@ const rolesData = [
 
   // Base user role
   { code: 'USER', name: 'User', description: 'Người dùng cơ bản' },
+
+
 ];
 
 export default rolesData;
