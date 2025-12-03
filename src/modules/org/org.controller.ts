@@ -71,6 +71,7 @@ export class OrgController {
   }
 
   @Get()
+  @UseGuards(JwtAuthGuard)
   @Permissions('org.read')
   @ApiOperation({
     summary: 'Liệt kê tổ chức',
@@ -102,7 +103,7 @@ export class OrgController {
   }
 
   @Get(':id')
-  @UseGuards(AdvancedScopeGuard)
+  @UseGuards(JwtAuthGuard, AdvancedScopeGuard)
   @ApiOperation({
     summary: 'Lấy tổ chức theo ID',
     description:
@@ -163,7 +164,7 @@ export class OrgController {
 
   // Members
   @Get(':id/members')
-  @UseGuards(AdvancedScopeGuard)
+  @UseGuards(JwtAuthGuard, AdvancedScopeGuard)
   @Permissions('org.members.read')
   @ApiOperation({
     summary: 'Liệt kê thành viên tổ chức',
@@ -234,6 +235,7 @@ export class OrgController {
 
   // My memberships
   @Get('/me/memberships')
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({
     summary: 'Lấy các tổ chức tôi tham gia',
     description: 'Lấy tất cả tổ chức mà người dùng hiện tại là thành viên.',
@@ -257,7 +259,7 @@ export class OrgController {
 
   // Switch Org
   @Post(':id/switch')
-  @UseGuards(AdvancedScopeGuard)
+  @UseGuards(JwtAuthGuard, AdvancedScopeGuard)
   @Permissions('org.switch')
   @ApiOperation({
     summary: 'Chuyển tổ chức hiện tại',
