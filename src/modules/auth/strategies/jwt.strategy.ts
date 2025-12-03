@@ -26,6 +26,11 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     if (!user) {
       throw new UnauthorizedException('Người dùng không tồn tại');
     }
-    return user;
+    // Flatten permissions để dễ sử dụng
+  const permissions = user.userRoles?.flatMap((ur: any) => 
+    ur.role?.rolePermissions?.map((rp: any) => rp.permission?.code) ?? []
+  ) ?? [];
+  
+  return { ...user, sub: user.id, permissions };
   }
 }
