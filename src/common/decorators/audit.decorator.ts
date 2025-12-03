@@ -1,6 +1,6 @@
 import { SetMetadata, applyDecorators, UseInterceptors } from '@nestjs/common';
-import { AUDIT_META_KEY } from '../audit/audit.meta';
-import { AuditMeta } from '../audit/audit.types';
+import { AUDIT_META_KEY } from '../meta/audit.meta';
+import { AuditMeta } from '../types/audit.types';
 import { AuditLogInterceptor } from '../interceptors/audit.interceptor';
 
 export const UseAudit = (meta: AuditMeta) =>

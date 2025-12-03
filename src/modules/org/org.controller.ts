@@ -33,13 +33,15 @@ import {
   OrgBrief,
   SwitchOrgResponse,
 } from './dto/responses';
-import { AuditAction } from '@/common/audit/audit.types';
+import { AuditAction } from '@/common/types/audit.types';
 import { UseAudit } from '@/common/decorators/audit.decorator';
 import { AdvancedScopeGuard } from '@/common/guards/advanced-scope.guard';
 import { Permissions } from '@/common/decorators/permissions.decorator';
 import { Roles } from '@/common/decorators/roles.decorator';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import { RolesGuard } from '@/common/guards/role.guard';
+import { CurrentUser } from '@/common/decorators/current-user.decorator';
+import { JwtUser } from '@/common/types/user.types';
 
 @ApiTags('Orgs')
 @ApiBearerAuth()
@@ -52,9 +54,9 @@ export class OrgController {
   @Permissions('org.create')
   @UseAudit({ entity: 'Org', action: AuditAction.Create })
   @ApiOperation({
-    summary: 'Create a new organization',
+    summary: 'Tạo tổ chức mới',
     description:
-      'Create a new organization. Only SUPER_ADMIN, ADMIN, or MANAGER roles can create organizations.',
+      'Tạo một tổ chức mới. Chỉ các vai trò SUPER_ADMIN, ADMIN hoặc MANAGER mới có thể tạo tổ chức.',
   })
   @ApiCreatedResponse({ type: OrgBrief })
   @ApiUnauthorizedResponse({
@@ -64,16 +66,16 @@ export class OrgController {
     description: 'Forbidden - user does not have required role or permission',
   })
   @ApiBadRequestResponse({ description: 'Bad Request - invalid input data' })
-  async createOrg(@Body() dto: CreateOrgDto) {
-    return this.service.createOrg(dto);
+  async createOrg(@Body() dto: CreateOrgDto, @CurrentUser() me: JwtUser) {
+    return this.service.createOrg(dto, me.sub);
   }
 
   @Get()
   @Permissions('org.read')
   @ApiOperation({
-    summary: 'List all organizations',
+    summary: 'Liệt kê tổ chức',
     description:
-      'Get a paginated list of organizations. Supports cursor-based pagination and search by name or code.',
+      'Trả về danh sách tổ chức phân trang. Hỗ trợ phân trang theo cursor và tìm kiếm theo tên hoặc mã.',
   })
   @ApiQuery({
     name: 'q',
@@ -102,9 +104,9 @@ export class OrgController {
   @Get(':id')
   @UseGuards(AdvancedScopeGuard)
   @ApiOperation({
-    summary: 'Get organization by ID',
+    summary: 'Lấy tổ chức theo ID',
     description:
-      'Retrieve a specific organization by its ID. User must have scope access to the organization.',
+      'Lấy thông tin tổ chức theo ID. Người dùng phải có phạm vi truy cập (scope) với tổ chức đó.',
   })
   @ApiParam({ name: 'id', description: 'Organization ID (UUID)' })
   @ApiNotFoundResponse({ description: 'Organization not found' })
@@ -123,9 +125,9 @@ export class OrgController {
   @Permissions('org.update')
   @UseAudit({ entity: 'Org', action: AuditAction.Update })
   @ApiOperation({
-    summary: 'Update organization',
+    summary: 'Cập nhật tổ chức',
     description:
-      'Update organization details (name). Only SUPER_ADMIN, ADMIN, or MANAGER can update.',
+      'Cập nhật thông tin tổ chức (ví dụ: tên). Chỉ SUPER_ADMIN, ADMIN hoặc MANAGER có thể cập nhật.',
   })
   @ApiParam({ name: 'id', description: 'Organization ID (UUID)' })
   @ApiNotFoundResponse({ description: 'Organization not found' })
@@ -145,9 +147,9 @@ export class OrgController {
   @Permissions('org.delete')
   @UseAudit({ entity: 'Org', action: AuditAction.Delete })
   @ApiOperation({
-    summary: 'Delete organization',
+    summary: 'Xóa tổ chức',
     description:
-      'Delete an organization and all associated data. Only SUPER_ADMIN, ADMIN, or MANAGER can delete.',
+      'Xóa tổ chức và tất cả dữ liệu liên quan. Chỉ SUPER_ADMIN, ADMIN hoặc MANAGER có thể xóa.',
   })
   @ApiParam({ name: 'id', description: 'Organization ID (UUID)' })
   @ApiOkResponse({ schema: { properties: { ok: { type: 'boolean' } } } })
@@ -164,9 +166,9 @@ export class OrgController {
   @UseGuards(AdvancedScopeGuard)
   @Permissions('org.members.read')
   @ApiOperation({
-    summary: 'List organization members',
+    summary: 'Liệt kê thành viên tổ chức',
     description:
-      'Get all members of a specific organization. User must have scope access to the organization.',
+      'Lấy tất cả thành viên của một tổ chức cụ thể. Người dùng phải có phạm vi truy cập với tổ chức đó.',
   })
   @ApiParam({ name: 'id', description: 'Organization ID (UUID)' })
   @ApiOkResponse({ type: ListMembersResponse })
@@ -185,9 +187,9 @@ export class OrgController {
   @Permissions('org.members.assign')
   @UseAudit({ entity: 'UserOrg', action: AuditAction.Create })
   @ApiOperation({
-    summary: 'Assign member to organization',
+    summary: 'Gán thành viên vào tổ chức',
     description:
-      'Add a user as a member to an organization. Only SUPER_ADMIN, ADMIN, or MANAGER can assign members.',
+      'Thêm user vào tổ chức với vai trò thành viên. Chỉ SUPER_ADMIN, ADMIN hoặc MANAGER có thể gán thành viên.',
   })
   @ApiParam({ name: 'id', description: 'Organization ID (UUID)' })
   @ApiBadRequestResponse({
@@ -210,9 +212,9 @@ export class OrgController {
   @Permissions('org.members.remove')
   @UseAudit({ entity: 'UserOrg', action: AuditAction.Delete })
   @ApiOperation({
-    summary: 'Remove member from organization',
+    summary: 'Gỡ thành viên khỏi tổ chức',
     description:
-      'Remove a user from an organization. Only SUPER_ADMIN, ADMIN, or MANAGER can remove members.',
+      'Gỡ user ra khỏi tổ chức. Chỉ SUPER_ADMIN, ADMIN hoặc MANAGER có thể thực hiện.',
   })
   @ApiParam({ name: 'id', description: 'Organization ID (UUID)' })
   @ApiParam({ name: 'userId', description: 'User ID (UUID)' })
@@ -233,8 +235,8 @@ export class OrgController {
   // My memberships
   @Get('/me/memberships')
   @ApiOperation({
-    summary: 'Get my organization memberships',
-    description: 'Get all organizations that the current user is a member of.',
+    summary: 'Lấy các tổ chức tôi tham gia',
+    description: 'Lấy tất cả tổ chức mà người dùng hiện tại là thành viên.',
   })
   @Permissions('org.read')
   @ApiOkResponse({
@@ -249,8 +251,8 @@ export class OrgController {
       },
     },
   })
-  async myMemberships() {
-    return this.service.myMemberships();
+  async myMemberships(@CurrentUser() me: JwtUser) {
+    return this.service.myMemberships(me.sub);
   }
 
   // Switch Org
@@ -258,9 +260,9 @@ export class OrgController {
   @UseGuards(AdvancedScopeGuard)
   @Permissions('org.switch')
   @ApiOperation({
-    summary: 'Switch current organization context',
+    summary: 'Chuyển tổ chức hiện tại',
     description:
-      'Switch the user context to a different organization and return a new access token with the new org scope.',
+      'Chuyển ngữ cảnh người dùng sang một tổ chức khác và trả về access token mới có phạm vi (scope) của tổ chức đó.',
   })
   @ApiParam({ name: 'id', description: 'Organization ID (UUID)' })
   @ApiOkResponse({ type: SwitchOrgResponse })
@@ -268,7 +270,10 @@ export class OrgController {
     description: 'Forbidden - user is not a member of this organization',
   })
   @ApiNotFoundResponse({ description: 'Organization not found' })
-  async switchOrg(@Param('id', new ParseUUIDPipe()) id: string) {
-    return this.service.switchOrg(id);
+  async switchOrg(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @CurrentUser() me: JwtUser,
+  ) {
+    return this.service.switchOrg(id, me.sub);
   }
 }

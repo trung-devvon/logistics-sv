@@ -1,6 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { CreateApiKeyDto } from './dto/create-api-key.dto';
-import { UpdateApiKeyDto } from './dto/update-api-key.dto';
 import { PrismaService } from '@/core/prisma/prisma.service';
 import { randomBytes } from 'crypto';
 import { SHA256 } from 'crypto-js';

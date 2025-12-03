@@ -1,19 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { AuditAction } from '@/common/audit/audit.types';
 import { PrismaService } from '@/core/prisma/prisma.service';
 import { Injectable } from '@nestjs/common';
+import { AuditWriteOptions } from '../schemas/audit.schema';
 
 @Injectable()
 export class AuditRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async write(opts: {
-    actorUserId: string | null;
-    entityType: string;
-    entityId: string | null;
-    action: AuditAction;
-    diff?: any;
-  }) {
+  async write(opts: AuditWriteOptions) {
     await this.prisma.auditLog.create({
       data: {
         actorUserId: opts.actorUserId,

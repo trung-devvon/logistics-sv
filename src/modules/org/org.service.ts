@@ -11,18 +11,10 @@ export class OrgService {
     private readonly jwt: JwtService,
   ) {}
 
-  private currentUserId(): string {
-    // Sẽ được inject qua request-scope nếu bạn cần; ở controller ta không truyền req vào service
-    // Với use-case thực tế, nên lấy userId từ request (context) thông qua custom decorator/CLS.
-    // Ở đây demo: giả định lấy từ 1 nguồn thread-local hoặc bạn thay bằng tham số đầu vào.
-    return '00000000-0000-0000-0000-000000000001';
-  }
-
-  async createOrg(dto: CreateOrgDto) {
-    const ownerId = this.currentUserId();
+  async createOrg(dto: CreateOrgDto, ownerUserId: string) {
     const org = await this.repo.createOrgWithOwner(
       { name: dto.name, code: dto.code },
-      ownerId,
+      ownerUserId,
     );
     return {
       id: org.id,
@@ -74,13 +66,11 @@ export class OrgService {
     return this.repo.removeMember(orgId, userId);
   }
 
-  myMemberships() {
-    const userId = this.currentUserId();
+  myMemberships(userId: string) {
     return this.repo.listMembershipsByUser(userId);
   }
 
-  async switchOrg(orgId: string) {
-    const userId = this.currentUserId();
+  async switchOrg(orgId: string, userId: string) {
     const ok = await this.repo.hasMembership(userId, orgId);
     if (!ok) throw new ForbiddenException('NO_SCOPE: cannot switch to org');
 

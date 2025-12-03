@@ -2,7 +2,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { NestFastifyApplication } from '@nestjs/platform-fastify';
 
-export function setupSwagger(app: NestFastifyApplication): void {
+export async function setupSwagger(app: NestFastifyApplication): Promise<void> {
   const configService = app.get(ConfigService);
   const nodeEnv = configService.get<string>('nodeEnv');
   const host = configService.get<string>('app.host');
@@ -41,12 +41,14 @@ export function setupSwagger(app: NestFastifyApplication): void {
 
   const document = SwaggerModule.createDocument(app, config);
 
-  app.register(require('@fastify/swagger'), {
+  const fastifySwagger = await import('@fastify/swagger');
+  await app.register((fastifySwagger as any).default ?? fastifySwagger, {
     mode: 'dynamic',
-    openapi: document, // truyền thẳng document vào đây
+    openapi: document,
   });
 
-  app.register(require('@fastify/swagger-ui'), {
+  const fastifySwaggerUi = await import('@fastify/swagger-ui');
+  await app.register((fastifySwaggerUi as any).default ?? fastifySwaggerUi, {
     routePrefix: '/api-docs',
     uiConfig: {
       docExpansion: 'list',

@@ -1,7 +1,6 @@
 import 'tsconfig-paths/register';
 
 import { NestFactory } from '@nestjs/core';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import {
   FastifyAdapter,
   NestFastifyApplication,
@@ -57,12 +56,8 @@ async function bootstrap() {
   const nodeEnv = configService.get<string>('nodeEnv');
   const appName = configService.get<string>('app.name');
 
-  const baseUrl =
-    nodeEnv === 'production'
-      ? `https://${configService.get<string>('app.domain')}`
-      : `http://${host}:${port}`;
-
-  setupSwagger(app);
+  // Setup Swagger (async to allow dynamic imports)
+  await setupSwagger(app);
 
   await app.listen(port, host);
   console.log(`🚀 ${appName} is running on: http://${host}:${port}`);

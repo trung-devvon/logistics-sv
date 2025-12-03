@@ -10,9 +10,9 @@ import {
 import { Reflector } from '@nestjs/core';
 import { Observable, tap } from 'rxjs';
 import { Request } from 'express';
-import { AUDIT_META_KEY } from '../audit/audit.meta';
-import { AuditRepository } from '../audit/audit.repository';
-import { AuditMeta } from '../audit/audit.types';
+import { AUDIT_META_KEY } from '../meta/audit.meta';
+import { AuditRepository } from '../repository/audit.repository';
+import { AuditMeta } from '../types/audit.types';
 
 @Injectable()
 export class AuditLogInterceptor implements NestInterceptor {

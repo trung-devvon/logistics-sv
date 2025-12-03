@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
-import { ScopeContext } from './scope.types';
+import { ScopeContext } from '../types/scope.types';
 
 export const Scope = createParamDecorator(
   (_: unknown, ctx: ExecutionContext): ScopeContext => {
