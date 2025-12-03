@@ -1,9 +1,16 @@
-import { Controller, Post, Body, UseGuards, Request, Get, Delete, Param } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  UseGuards,
+  Request,
+  Get,
+} from '@nestjs/common';
 import { ApiKeysService } from './api-keys.service';
-import { Roles } from '../auth/decorators/roles.decorator';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../auth/guards/role.guard';
-import { ApiKeyAuthGuard } from '../auth/guards/api-key.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/role.guard';
+import { ApiKeyAuthGuard } from '../../common/guards/api-key.guard';
 
 @Controller('api-keys')
 export class ApiKeysController {
@@ -46,5 +53,4 @@ export class ApiKeysController {
       key_info: req.user, // Trả về thông tin của Key record
     };
   }
-
 }

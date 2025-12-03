@@ -6,8 +6,9 @@ import { Strategy } from 'passport-local'; // 1. Import Strategy từ 'passport-
 import { AuthService } from '../auth.service';
 
 @Injectable()
-export class LocalStrategy extends PassportStrategy(Strategy, 'local') { // 2. Đặt tên strategy là 'local'
-  
+export class LocalStrategy extends PassportStrategy(Strategy, 'local') {
+  // 2. Đặt tên strategy là 'local'
+
   constructor(private authService: AuthService) {
     super({
       usernameField: 'identifier',
@@ -15,7 +16,6 @@ export class LocalStrategy extends PassportStrategy(Strategy, 'local') { // 2. �
   }
 
   async validate(identifier: string, password: string): Promise<any> {
-    
     const user = await this.authService.validateUser(identifier, password);
 
     if (!user) {

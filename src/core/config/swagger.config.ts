@@ -2,8 +2,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { NestFastifyApplication } from '@nestjs/platform-fastify';
 
-
-export function setupSwagger(app: NestFastifyApplication): void {
+export async function setupSwagger(app: NestFastifyApplication): Promise<void> {
   const configService = app.get(ConfigService);
   const nodeEnv = configService.get<string>('nodeEnv');
   const host = configService.get<string>('app.host');
@@ -17,37 +16,39 @@ export function setupSwagger(app: NestFastifyApplication): void {
     .setDescription('API documentation for My Logistics application')
     .setVersion('1.0.0')
     .addBearerAuth(
-    {
-      type: 'http',
-      scheme: 'bearer',
-      bearerFormat: 'JWT',
-      name: 'JWT',
-      description: 'Enter access token',
-      in: 'header',
-    },
-    'access-token', // tên này sẽ dùng cho các endpoint bình thường
-  )
-  .addBearerAuth(
-    {
-      type: 'http',
-      scheme: 'bearer',
-      bearerFormat: 'JWT',
-      description: 'Enter refresh token đây',
-      in: 'header',
-    },
-    'refresh-token', // tên này khớp với @ApiBearerAuth('refresh-token') ở trên
-  )
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'JWT',
+        description: 'Enter access token',
+        in: 'header',
+      },
+      'access-token', // tên này sẽ dùng cho các endpoint bình thường
+    )
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        description: 'Enter refresh token đây',
+        in: 'header',
+      },
+      'refresh-token', // tên này khớp với @ApiBearerAuth('refresh-token') ở trên
+    )
     .addServer(baseUrl)
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
 
-  app.register(require('@fastify/swagger'), {
+  const fastifySwagger = await import('@fastify/swagger');
+  await app.register((fastifySwagger as any).default ?? fastifySwagger, {
     mode: 'dynamic',
-    openapi: document, // truyền thẳng document vào đây
+    openapi: document,
   });
 
-  app.register(require('@fastify/swagger-ui'), {
+  const fastifySwaggerUi = await import('@fastify/swagger-ui');
+  await app.register((fastifySwaggerUi as any).default ?? fastifySwaggerUi, {
     routePrefix: '/api-docs',
     uiConfig: {
       docExpansion: 'list',
@@ -59,5 +60,4 @@ export function setupSwagger(app: NestFastifyApplication): void {
     },
     staticCSP: true,
   });
-
 }

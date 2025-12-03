@@ -7,17 +7,17 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { LocalStrategy } from './strategies/local.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { RolesGuard } from './guards/role.guard';
-import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/role.guard';
+import { JwtRefreshGuard } from '../../common/guards/jwt-refresh.guard';
 import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
-import { ApiKeyAuthGuard } from './guards/api-key.guard';
+import { ApiKeyAuthGuard } from '../../common/guards/api-key.guard';
 import { ApiKeyStrategy } from './strategies/api-key.strategy';
 import { ApiKeysModule } from '../api-keys/api-keys.module';
 
 @Global()
 @Module({
-  imports:[
+  imports: [
     UsersModule,
     ApiKeysModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
@@ -32,7 +32,7 @@ import { ApiKeysModule } from '../api-keys/api-keys.module';
   ],
   controllers: [AuthController],
   providers: [
-    AuthService, // 
+    AuthService, //
     LocalStrategy, // xác thực user
     JwtStrategy, // xác thực token
     JwtAuthGuard,
@@ -40,14 +40,14 @@ import { ApiKeysModule } from '../api-keys/api-keys.module';
     JwtRefreshGuard,
     JwtRefreshStrategy,
     ApiKeyStrategy,
-    ApiKeyAuthGuard
+    ApiKeyAuthGuard,
   ],
   exports: [
     AuthService,
-    JwtAuthGuard, 
-    RolesGuard, 
+    JwtAuthGuard,
+    RolesGuard,
     JwtRefreshGuard,
-    ApiKeyAuthGuard
+    ApiKeyAuthGuard,
   ],
 })
 export class AuthModule {}

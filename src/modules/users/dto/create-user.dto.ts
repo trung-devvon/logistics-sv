@@ -8,37 +8,36 @@ import {
 } from 'class-validator';
 
 export class CreateUserDto {
-
-  @ApiProperty({ 
+  @ApiProperty({
     example: 'John Doe',
-    required: false 
+    required: false,
   })
   @IsString()
   @IsOptional()
   fullName?: string;
 
-  @ApiProperty({ 
+  @ApiProperty({
     example: 'user@example.com',
     required: true,
-    description: 'Email address of the user'
+    description: 'Email address of the user',
   })
   @IsEmail()
   @IsNotEmpty()
   email: string;
 
-  @ApiProperty({ 
+  @ApiProperty({
     example: '+84123456789',
     required: false,
-    description: 'Phone number of the user'
+    description: 'Phone number of the user',
   })
   @IsString()
   @IsOptional()
   phone?: string;
 
-  @ApiProperty({ 
+  @ApiProperty({
     example: 'P@ssword1234',
     required: true,
-    description: 'Password for the user account'
+    description: 'Password for the user account',
   })
   @IsString()
   @MinLength(8)
