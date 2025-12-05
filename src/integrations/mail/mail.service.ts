@@ -47,4 +47,28 @@ export class MailService {
 
     console.log(`📧 Đã gửi OTP ${otp} đến ${email}`);
   }
+
+  /**
+   * Gửi Email OTP Đăng ký tài khoản
+   */
+  async sendRegistrationOtp(email: string, otp: string) {
+    const templatePath = path.join(
+      process.cwd(),
+      'src/integrations/mail/templates/register-otp.ejs',
+    );
+
+    const html = await ejs.renderFile(templatePath, {
+      name: email, // Ban đầu chưa có tên, dùng email tạm hoặc để trống
+      otp: otp,
+    });
+
+    await this.transporter.sendMail({
+      from: '"Logistics App Support" <no-reply@logistics.com>',
+      to: email,
+      subject: 'Xác thực đăng ký tài khoản (OTP)',
+      html: html,
+    });
+
+    console.log(`📧 Đã gửi OTP đăng ký ${otp} đến ${email}`);
+  }
 }

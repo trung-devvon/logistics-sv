@@ -53,9 +53,10 @@ model User {
 
   configReportsCreated ConfigReport[] @relation("ConfigReportCreatedBy")
 
-  notifications  Notification[]
-  documentsOwned Document[]
-  auditLogs      AuditLog[]     @relation("AuditActor")
+  notifications        Notification[]
+  documentsOwned       Document[]
+  auditLogs            AuditLog[]            @relation("AuditActor")
+  accountVerifications AccountVerification[]
 
   @@index([isActive], map: "idx_users_active")
   @@map("users")
@@ -170,6 +171,20 @@ model PasswordReset {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("password_resets")
+}
+
+// ---------- account_verifications ----------
+model AccountVerification {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  token     String    @unique // OTP
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  expiresAt DateTime? @map("expires_at") @db.Timestamptz(6)
+  usedAt    DateTime? @map("used_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("account_verifications")
 }
 
 // ---------- api_keys ----------

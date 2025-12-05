@@ -11,6 +11,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { MailModule } from './integrations/mail/mail.module';
 import { ApiKeysModule } from './modules/api-keys/api-keys.module';
 import { OrgModule } from './modules/org/org.module';
+import { HubsModule } from './modules/hubs/hubs.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -33,6 +34,7 @@ import { OrgModule } from './modules/org/org.module';
     OrgModule,
     MailModule,
     ApiKeysModule,
+    HubsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

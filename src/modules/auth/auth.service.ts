@@ -1,6 +1,8 @@
 import {
+  ConflictException,
   ForbiddenException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -14,6 +16,9 @@ import { PrismaService } from '@/core/prisma/prisma.service';
 import { v4 as uuidv4 } from 'uuid';
 import { MailService } from '@/integrations/mail/mail.service';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { RegisterDto } from './dto/register.dto';
+import { VerifyOtpDto } from './dto/verify-otp.dto';
+import { UpgradeMerchantDto } from './dto/upgrade-merchant.dto';
 
 @Injectable()
 export class AuthService {
@@ -23,7 +28,7 @@ export class AuthService {
     private configService: ConfigService, // 4. Inject ConfigService
     private prisma: PrismaService, // 5. Inject PrismaService
     private mailService: MailService,
-  ) {}
+  ) { }
   /**
    * call by LocalStrategy
    * @param email Email
@@ -55,6 +60,134 @@ export class AuthService {
       await this.generateTokens(payload);
     await this.updateRefreshToken(user.id, refreshToken, refreshTokenId); // <-- Truyền ID vào
     return { accessToken, refreshToken }; // <-- Vẫn chỉ trả 2 token cho client
+  }
+
+  async register(dto: RegisterDto) {
+    // 1. Check existing user
+    const existingUser = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
+    if (existingUser) {
+      throw new ConflictException('Email đã được sử dụng');
+    }
+
+    // 2. Hash password
+    const hashPassword = await argon2.hash(dto.password);
+
+    // 3. Create user (isActive = false)
+    const newUser = await this.prisma.user.create({
+      data: {
+        email: dto.email,
+        passwordHash: hashPassword,
+        isActive: false, // Chờ xác thực OTP
+      },
+    });
+
+    // 4. Generate & Send OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date();
+    expiresAt.setMinutes(expiresAt.getMinutes() + 10); // 10 phút
+
+    await this.prisma.accountVerification.create({
+      data: {
+        userId: newUser.id,
+        token: otp, // Lưu raw OTP hoặc hash tùy policy (ở đây lưu raw để demo đơn giản, production nên hash)
+        expiresAt,
+      },
+    });
+
+    try {
+      await this.mailService.sendRegistrationOtp(newUser.email, otp);
+    } catch (error) {
+      console.error('Lỗi gửi mail OTP:', error);
+      // Không throw error để tránh rollback user, user có thể yêu cầu gửi lại OTP sau
+    }
+
+    return {
+      message: 'Đăng ký thành công. Vui lòng kiểm tra email để lấy mã OTP xác thực.',
+      userId: newUser.id,
+    };
+  }
+
+  async verifyRegistration(dto: VerifyOtpDto) {
+    const user = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
+    if (!user) {
+      throw new NotFoundException('Email không tồn tại');
+    }
+    if (user.isActive) {
+      throw new ConflictException('Tài khoản đã được kích hoạt');
+    }
+
+    // Check OTP
+    const verification = await this.prisma.accountVerification.findFirst({
+      where: {
+        userId: user.id,
+        token: dto.otp,
+        usedAt: null,
+        expiresAt: { gt: new Date() },
+      },
+    });
+
+    if (!verification) {
+      throw new UnauthorizedException('Mã OTP không hợp lệ hoặc đã hết hạn');
+    }
+
+    // Activate user & Mark OTP used
+    await this.prisma.$transaction([
+      this.prisma.user.update({
+        where: { id: user.id },
+        data: { isActive: true },
+      }),
+      this.prisma.accountVerification.update({
+        where: { id: verification.id },
+        data: { usedAt: new Date() },
+      }),
+    ]);
+
+    // Auto login -> Return tokens
+    return this.login(user);
+  }
+
+  async upgradeToMerchant(userId: string, dto: UpgradeMerchantDto) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: { userRoles: { include: { role: true } } },
+    });
+    if (!user) throw new NotFoundException('User not found');
+
+    // Check if already merchant
+    const isMerchant = user.userRoles.some((ur) => ur.role.code === 'MERCHANT');
+    if (isMerchant) {
+      throw new ConflictException('Tài khoản đã là Merchant');
+    }
+
+    const merchantRole = await this.prisma.role.findUnique({
+      where: { code: 'MERCHANT' },
+    });
+    if (!merchantRole) {
+      throw new InternalServerErrorException('Role MERCHANT not found');
+    }
+
+    // Update user info & Add role
+    await this.prisma.$transaction([
+      this.prisma.user.update({
+        where: { id: userId },
+        data: {
+          fullName: dto.fullName,
+          phone: dto.phone,
+        },
+      }),
+      this.prisma.userRole.create({
+        data: {
+          userId: userId,
+          roleId: merchantRole.id,
+        },
+      }),
+    ]);
+
+    return { message: 'Nâng cấp tài khoản Merchant thành công' };
   }
 
   async logout(refreshTokenId: string) {

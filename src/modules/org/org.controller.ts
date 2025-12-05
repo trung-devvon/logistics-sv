@@ -48,7 +48,7 @@ import { PermissionsGuard } from '@/common/guards/permissions.guard';
 @ApiBearerAuth('JWT-auth')
 @Controller('orgs')
 export class OrgController {
-  constructor(private readonly service: OrgService) {}
+  constructor(private readonly service: OrgService) { }
   @Roles('SUPER_ADMIN', 'ADMIN', 'MANAGER')
   @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
   @Post()
