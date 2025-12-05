@@ -6,8 +6,6 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
 import { UsersService } from '../users/users.service';
 import * as argon2 from 'argon2';
 import { JwtService } from '@nestjs/jwt';
@@ -91,7 +89,7 @@ export class AuthService {
     await this.prisma.accountVerification.create({
       data: {
         userId: newUser.id,
-        token: otp, // Lưu raw OTP hoặc hash tùy policy (ở đây lưu raw để demo đơn giản, production nên hash)
+        token: otp, // production sẽ hash sau
         expiresAt,
       },
     });
