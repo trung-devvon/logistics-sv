@@ -25,7 +25,7 @@ export class UsersController {
 
   @Roles('SUPER_ADMIN', 'ADMIN', 'MANAGER')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Post('register')
+  @Post('add-user')
   @ApiOperation({ summary: 'Register new user (Admin/Manager only)' })
   @ApiCreatedResponse({
     description: 'User registered successfully',
