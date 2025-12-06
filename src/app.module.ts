@@ -12,6 +12,8 @@ import { MailModule } from './integrations/mail/mail.module';
 import { ApiKeysModule } from './modules/api-keys/api-keys.module';
 import { OrgModule } from './modules/org/org.module';
 import { HubsModule } from './modules/hubs/hubs.module';
+import { DriversModule } from './modules/drivers/drivers.module';
+import { VehiclesModule } from './modules/vehicles/vehicles.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -35,6 +37,8 @@ import { HubsModule } from './modules/hubs/hubs.module';
     MailModule,
     ApiKeysModule,
     HubsModule,
+    DriversModule,
+    VehiclesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
