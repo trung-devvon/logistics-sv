@@ -22,9 +22,11 @@ export class PermissionsGuard implements CanActivate {
     const user = req.user;
     if (!user) throw new ForbiddenException('UNAUTHENTICATED');
 
-    const granted: string[] = user.userRoles?.flatMap((ur: any) =>
-      ur.role?.rolePermissions?.map((rp: any) => rp.permission?.code) ?? [],
-    ) ?? []; // JWT attach
+    const granted: string[] =
+      user.userRoles?.flatMap(
+        (ur: any) =>
+          ur.role?.rolePermissions?.map((rp: any) => rp.permission?.code) ?? [],
+      ) ?? []; // JWT attach
     const ok = required.every((p) => granted.includes(p));
     if (!ok) throw new ForbiddenException('FORBIDDEN: missing permission');
     return true;
