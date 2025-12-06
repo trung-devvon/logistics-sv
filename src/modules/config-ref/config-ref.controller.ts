@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { ConfigRefService } from './config-ref.service';
 import { CreateConfigRefDto } from './dto/create-config-ref.dto';
 import { UpdateConfigRefDto } from './dto/update-config-ref.dto';
@@ -23,7 +31,10 @@ export class ConfigRefController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateConfigRefDto: UpdateConfigRefDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateConfigRefDto: UpdateConfigRefDto,
+  ) {
     return this.configRefService.update(+id, updateConfigRefDto);
   }
 

@@ -27,10 +27,12 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       throw new UnauthorizedException('Người dùng không tồn tại');
     }
     // Flatten permissions để dễ sử dụng
-  const permissions = user.userRoles?.flatMap((ur: any) => 
-    ur.role?.rolePermissions?.map((rp: any) => rp.permission?.code) ?? []
-  ) ?? [];
-  
-  return { ...user, sub: user.id, permissions };
+    const permissions =
+      user.userRoles?.flatMap(
+        (ur: any) =>
+          ur.role?.rolePermissions?.map((rp: any) => rp.permission?.code) ?? [],
+      ) ?? [];
+
+    return { ...user, sub: user.id, permissions };
   }
 }

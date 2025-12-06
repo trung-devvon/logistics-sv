@@ -35,7 +35,6 @@ import {
 } from './dto/responses';
 import { AuditAction } from '@/common/types/audit.types';
 import { UseAudit } from '@/common/decorators/audit.decorator';
-import { AdvancedScopeGuard } from '@/common/guards/advanced-scope.guard';
 import { Permissions } from '@/common/decorators/permissions.decorator';
 import { Roles } from '@/common/decorators/roles.decorator';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
@@ -77,6 +76,14 @@ export class OrgController {
 
   @Get()
   @UseGuards(JwtAuthGuard)
+  @Roles(
+    'SUPER_ADMIN',
+    'ADMIN',
+    'MANAGER',
+    'HUB_MANAGER',
+    'DISPATCHER',
+    'STATION_MANAGER',
+  )
   @Permissions('org.read')
   @ApiOperation({
     summary: 'Liệt kê tổ chức',
@@ -112,7 +119,15 @@ export class OrgController {
   }
 
   @Get(':id')
-  @UseGuards(JwtAuthGuard, AdvancedScopeGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
+  @Roles(
+    'SUPER_ADMIN',
+    'ADMIN',
+    'MANAGER',
+    'HUB_MANAGER',
+    'DISPATCHER',
+    'STATION_MANAGER',
+  )
   @ApiOperation({
     summary: 'Lấy tổ chức theo ID',
     description:
@@ -160,7 +175,7 @@ export class OrgController {
     };
   }
   @Roles('SUPER_ADMIN', 'ADMIN', 'MANAGER')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
   @Delete(':id')
   @Permissions('org.delete')
   @UseAudit({ entity: 'Org', action: AuditAction.Delete })
@@ -181,8 +196,10 @@ export class OrgController {
   }
 
   // Members
+  @Roles('SUPER_ADMIN', 'ADMIN', 'MANAGER', 'HUB_MANAGER')
+  @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
   @Get(':id/members')
-  @UseGuards(JwtAuthGuard, AdvancedScopeGuard)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
   @Permissions('org.members.read')
   @ApiOperation({
     summary: 'Liệt kê thành viên tổ chức',
@@ -201,7 +218,7 @@ export class OrgController {
     return { data: items, message: 'Get organization members successfully' };
   }
   @Roles('SUPER_ADMIN', 'ADMIN', 'MANAGER')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
   @Post(':id/members')
   @Permissions('org.members.assign')
   @UseAudit({ entity: 'UserOrg', action: AuditAction.Create })
@@ -226,8 +243,8 @@ export class OrgController {
     const res = await this.service.assignMember(id, dto.userId);
     return { data: res, message: 'User assigned to organization successfully' };
   }
-  @Roles('SUPER_ADMIN', 'ADMIN', 'MANAGER')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('SUPER_ADMIN', 'ADMIN')
+  @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
   @Delete(':id/members/:userId')
   @Permissions('org.members.remove')
   @UseAudit({ entity: 'UserOrg', action: AuditAction.Delete })
@@ -257,8 +274,28 @@ export class OrgController {
   }
 
   // My memberships
+  @Roles(
+    'SUPER_ADMIN',
+    'ADMIN',
+    'MANAGER',
+    'HUB_MANAGER',
+    'DISPATCHER',
+    'STATION_MANAGER',
+    'USER',
+    'COURIER',
+    'SORTER',
+    'ACCOUNTANT',
+    'QUALITY_CONTROL',
+    'WAREHOUSE_STAFF',
+    'CLAIM_STAFF',
+    'CUSTOMER_SERVICE',
+    'RETURN_STAFF',
+    'PARTNER',
+    'MERCHANT',
+    'FINANCE_MANAGER',
+  )
   @Get('/me/memberships')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
   @ApiOperation({
     summary: 'Lấy các tổ chức tôi tham gia',
     description: 'Lấy tất cả tổ chức mà người dùng hiện tại là thành viên.',
@@ -285,8 +322,28 @@ export class OrgController {
   }
 
   // Switch Org
+  @Roles(
+    'SUPER_ADMIN',
+    'ADMIN',
+    'MANAGER',
+    'HUB_MANAGER',
+    'DISPATCHER',
+    'STATION_MANAGER',
+    'USER',
+    'COURIER',
+    'SORTER',
+    'ACCOUNTANT',
+    'QUALITY_CONTROL',
+    'WAREHOUSE_STAFF',
+    'CLAIM_STAFF',
+    'CUSTOMER_SERVICE',
+    'RETURN_STAFF',
+    'PARTNER',
+    'MERCHANT',
+    'FINANCE_MANAGER',
+  )
   @Post(':id/switch')
-  @UseGuards(JwtAuthGuard, AdvancedScopeGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
   @Permissions('org.switch')
   @ApiOperation({
     summary: 'Chuyển tổ chức hiện tại',
