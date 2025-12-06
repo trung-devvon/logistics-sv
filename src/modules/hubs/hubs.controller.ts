@@ -24,6 +24,8 @@ import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import { RolesGuard } from '@/common/guards/role.guard';
 import { Roles } from '@/common/decorators/roles.decorator';
 
+import { FilterHubDto } from './dto/filter-hub.dto';
+
 @ApiTags('Hubs')
 @ApiBearerAuth('JWT-auth')
 @Controller('hubs')
@@ -50,11 +52,10 @@ export class HubsController {
     'SORTER',
     'COURIER',
   )
-  @ApiOperation({ summary: 'Lấy danh sách Hub' })
-  @ApiQuery({ name: 'orgId', required: false, description: 'Lọc theo Org ID' })
+  @ApiOperation({ summary: 'Lấy danh sách Hub (có phân trang & lọc)' })
   @ApiOkResponse({ description: 'Danh sách Hub' })
-  findAll(@Query('orgId') orgId?: string) {
-    return this.hubsService.findAll(orgId);
+  findAll(@Query() query: FilterHubDto) {
+    return this.hubsService.findAll(query);
   }
 
   @Get(':id')
