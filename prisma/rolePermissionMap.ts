@@ -1,207 +1,145 @@
-// prisma/rolePermissionMap.ts
+import permissionsData from "./permissionData";
 
-/**
- * Mapping role → permissions cho toàn hệ thống logistics.
- * Lưu ý:
- *  - SUPER_ADMIN: full quyền
- *  - ADMIN: gần full, trừ quyền nguy hiểm
- *  - MANAGER: quyền quản lý nghiệp vụ
- *  - HUB/STATION/COURIER: phân theo nhiệm vụ thực tế
- *  - PARTNER: chỉ có quyền API / dashboard
- *  - SHOP: tạo & quản lý đơn hàng của shop
- *  - CUSTOMER: chỉ xem đơn của họ
- */
+const rolePermissionsMap = {
+  // 1. SUPER_ADMIN – Toàn quyền (có tất cả 79 quyền)
+  SUPER_ADMIN: permissionsData.map(p => p.code),
 
-const rolePermissionMap = {
-  // ======================================
-  // SUPER ADMIN → full quyền
-  // ======================================
-  SUPER_ADMIN: ['*'], // Dấu * nghĩa là ALL permissions
-
-  // ======================================
-  // ADMIN → quản trị hệ thống (nhưng không can thiệp hướng nội)
-  // ======================================
+  // 2. ADMIN – Gần như toàn quyền, trừ một số quyền nhạy cảm của Super Admin
   ADMIN: [
-    // user management
+    // User & Role management
     'users:create', 'users:read', 'users:update', 'users:delete',
-
-    // roles
     'roles:create', 'roles:read', 'roles:update', 'roles:delete',
 
-    // drivers
-    'drivers:create', 'drivers:read', 'drivers:update', 'drivers:delete',
-    'drivers:assign', 'drivers:suspend', 'drivers:location',
+    // Tổ chức (ORG) – Admin được toàn quyền quản lý tổ chức
+    'org.create', 'org.read', 'org.update', 'org.delete',
+    'org.members.read', 'org.members.assign', 'org.members.remove',
+    'org.switch',
 
-    // shipments
-    'shipments:create', 'shipments:read', 'shipments:update',
-    'shipments:delete', 'shipments:assign', 'shipments:status',
-    'shipments:cancel', 'shipments:pricing',
-
-    // hubs / warehouse
-    'hubs:create', 'hubs:read', 'hubs:update', 'hubs:delete',
-    'hubs:scan_in', 'hubs:scan_out', 'hubs:inventory',
-
-    // routing
-    'routes:plan', 'routes:assign', 'routes:optimize', 'routes:read',
-
-    // reports
-    'reports:shipments', 'reports:revenue',
-    'reports:driver-performance', 'reports:exceptions',
-
-    // finance / COD
-    'cod:read', 'cod:settlement', 'cod:refund',
-    'transactions:read',
-
-    // settings
-    'settings:read', 'settings:update',
-    'pricing:update', 'service-area:update',
-
-    // partner (admin có thể xem dashboard & apikey)
-    'partner:dashboard_orders',
-    'partner:dashboard_settlement',
-    'partner:dashboard_api_key',
+    // Toàn bộ các module khác (trừ một số quyền tài chính cực nhạy cảm có thể để lại cho Super)
+    ...permissionsData
+      .map(p => p.code)
+      .filter(code =>
+        !['cod:withdraw', 'transactions:approve'].includes(code) // để Super Admin duyệt cuối cùng
+      ),
   ],
 
-  // ======================================
-  // MANAGER → quản lý vận hành chung
-  // ======================================
+  // 3. MANAGER (Quản lý cấp cao vận hành)
   MANAGER: [
-    'users:read',
+    // Được quản lý tổ chức (xem + chuyển đổi, không tạo/xóa)
+    'org.read', 'org.switch', 'org.members.read',
 
-    'drivers:read', 'drivers:update', 'drivers:assign', 'drivers:location',
+    // Quản lý người dùng & vai trò trong công ty mình
+    'users:create', 'users:read', 'users:update', 'users:delete',
+    'roles:read',
 
-    'shipments:create', 'shipments:read', 'shipments:update',
-    'shipments:assign', 'shipments:status', 'shipments:cancel',
-
-    'hubs:read', 'hubs:scan_in', 'hubs:scan_out', 'hubs:inventory',
-
-    'routes:plan', 'routes:assign', 'routes:read',
-
-    'reports:shipments', 'reports:exceptions',
-
-    'cod:read',
+    // Toàn bộ vận hành đơn hàng, tài xế, kho, tuyến đường, báo cáo
+    'drivers:*', 'shipments:*', 'hubs:*', 'routes:*', 'reports:*',
+    'returns:*', 'claims:read', 'claims:update',
+    'cod:read', 'cod:settlement', 'transactions:read',
+    'settings:read',
   ],
 
-  // ======================================
-  // HUB MANAGER → quản lý kho trung chuyển
-  // ======================================
+  // 4. HUB_MANAGER / STATION_MANAGER
   HUB_MANAGER: [
-    'hubs:read', 'hubs:update',
-    'hubs:scan_in', 'hubs:scan_out', 'hubs:inventory',
-
-    'shipments:read', 'shipments:status',
+    'org.read', 'org.switch',
 
     'drivers:read', 'drivers:location',
-
-    'reports:shipments',
+    'shipments:read', 'shipments:update', 'shipments:assign', 'shipments:status',
+    'hubs:read', 'hubs:scan_in', 'hubs:scan_out', 'hubs:inventory',
+    'returns:read', 'returns:process', 'returns:scan_in', 'returns:scan_out',
+    'routes:read',
+    'reports:shipments', 'reports:driver-performance',
   ],
 
-  // ======================================
-  // STATION MANAGER → quản lý điểm giao nhận
-  // ======================================
-  STATION_MANAGER: [
-    'shipments:read', 'shipments:status',
-    'drivers:read', 'drivers:assign', 'drivers:location',
-    'hubs:scan_in', 'hubs:scan_out',
-    'reports:shipments',
-  ],
-
-  // ======================================
-  // DISPATCHER → điều phối viên
-  // ======================================
+  // 5. DISPATCHER (Điều phối)
   DISPATCHER: [
-    'routes:plan', 'routes:assign', 'routes:read',
-    'drivers:read', 'drivers:assign',
-    'shipments:read', 'shipments:assign', 'shipments:status',
+    'org.read', 'org.switch',
+
+    'drivers:read', 'drivers:assign', 'drivers:location',
+    'shipments:create', 'shipments:read', 'shipments:assign', 'shipments:status',
+    'routes:plan', 'routes:assign', 'routes:optimize', 'routes:read',
+    'routes:read',
+    'hubs:scan_in', 'hubs:scan_out',
   ],
 
-  // ======================================
-  // SORTER → nhân viên phân loại hàng
-  // ======================================
-  SORTER: [
-    'hubs:scan_in',
-    'hubs:scan_out',
-    'shipments:read',
-  ],
-
-  // ======================================
-  // WAREHOUSE STAFF → nhân viên kho
-  // ======================================
+  // 6. WAREHOUSE_STAFF / SORTER
   WAREHOUSE_STAFF: [
-    'hubs:scan_in',
-    'hubs:scan_out',
-    'hubs:inventory',
-    'shipments:read',
+    'org.read', 'org.switch',
+
+    'shipments:read', 'shipments:status',
+    'hubs:scan_in', 'hubs:scan_out', 'hubs:inventory',
+    'returns:scan_in', 'returns:scan_out',
   ],
 
-  // ======================================
-  // COURIER → tài xế / shipper
-  // ======================================
+  // 7. COURIER (Tài xế) – trên app mobile
   COURIER: [
-    'shipments:read',
-    'shipments:status',
-    'cod:read',
-    'cod:withdraw',
+    'org.read', 'org.switch',
+
+    'shipments:read', 'shipments:status', // chỉ xem và cập nhật trạng thái đơn được giao
+    'drivers:location',                 // hệ thống tự gửi, không phải quyền chủ động
+    'cod:read',                        // xem tiền COD của đơn mình
   ],
 
-  // ======================================
-  // CUSTOMER SERVICE → chăm sóc khách hàng
-  // ======================================
+  // 8. CUSTOMER_SERVICE
   CUSTOMER_SERVICE: [
-    'shipments:read',
-    'shipments:status',
-    'shipments:cancel',
-    'users:read',
-    'reports:exceptions',
+    'org.read', 'org.switch',
+
+    'shipments:read', 'shipments:update', 'shipments:status',
+    'cskh:tickets_read', 'cskh:tickets_update',
+    'claims:read', 'claims:update',
+    'customers:*', // nếu sau này có
   ],
 
-  // ======================================
-  // ACCOUNTANT → kế toán / đối soát
-  // ======================================
+  // 9. ACCOUNTANT / FINANCE_MANAGER
   ACCOUNTANT: [
-    'cod:read',
-    'cod:settlement',
-    'cod:refund',
+    'org.read', 'org.switch',
+
+    'cod:read', 'cod:settlement', 'cod:refund',
     'transactions:read',
-    'reports:revenue',
+    'reports:revenue', 'reports:shipments',
   ],
 
-  // ======================================
-  // SHOP (seller nhỏ lẻ)
-  // ======================================
-  SHOP: [
-    'shipments:create',
-    'shipments:read',
-    'shipments:update',
-    'shipments:cancel',
+  // 10. MERCHANT (Chủ shop – tạo đơn từ dashboard)
+  MERCHANT: [
+    'org.read', 'org.switch',
+
+    'shipments:create', 'shipments:read', 'shipments:cancel',
+    'cod:read',
+    'reports:shipments', 'reports:revenue',
   ],
 
-  // ======================================
-  // PARTNER (đối tác lớn / TMĐT)
-  // ======================================
+  // 11. PARTNER (Đối tác TMĐT lớn – chỉ dùng API + dashboard riêng)
   PARTNER: [
-    // API quyền
     'partner:api_create_order',
     'partner:api_order_status',
     'partner:api_webhook',
-
-    // Dashboard quyền
     'partner:dashboard_orders',
     'partner:dashboard_settlement',
     'partner:dashboard_api_key',
+    // Không được vào org khác, không org.switch
   ],
 
-  // ======================================
-  // CUSTOMER (người nhận hàng)
-  // ======================================
-  CUSTOMER: [
-    'shipments:read',
+  // 12. RETURN_STAFF
+  RETURN_STAFF: [
+    'org.read', 'org.switch',
+    'returns:read', 'returns:process', 'returns:scan_in', 'returns:scan_out',
   ],
 
-  // ======================================
-  // USER (basic)
-  // ======================================
-  USER: [],
+  // 13. CLAIM_STAFF
+  CLAIM_STAFF: [
+    'org.read', 'org.switch',
+    'claims:read', 'claims:update', 'claims:compensate',
+  ],
+
+  // 14. QUALITY_CONTROL
+  QUALITY_CONTROL: [
+    'org.read', 'org.switch',
+    'qc:inspect', 'qc:report',
+    'shipments:read', 'returns:read',
+  ],
+
+  // 15. USER (người dùng cơ bản – ít quyền nhất)
+  USER: [
+    'org.read', 'org.switch',
+  ],
 };
-
-export default rolePermissionMap;

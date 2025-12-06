@@ -10,6 +10,11 @@ import {
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
 import { LoginDto } from './dto/login.dto';
+import { RegisterDto } from './dto/register.dto';
+import { VerifyOtpDto } from './dto/verify-otp.dto';
+import { UpgradeMerchantDto } from './dto/upgrade-merchant.dto';
+import { CurrentUser } from '@/common/decorators/current-user.decorator';
+import { JwtUser } from '@/common/types/user.types';
 import { JwtRefreshGuard } from '../../common/guards/jwt-refresh.guard';
 
 import {
@@ -22,6 +27,7 @@ import {
   ApiBadRequestResponse,
   ApiForbiddenResponse,
   ApiConflictResponse,
+  ApiBody,
 } from '@nestjs/swagger';
 import {
   EmailForgotPasswordDto,
@@ -33,7 +39,7 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   @HttpCode(HttpStatus.OK) //
   @UseGuards(AuthGuard('local'))
@@ -122,5 +128,30 @@ export class AuthController {
     return {
       message: data.message,
     };
+  }
+  @Post('register')
+  @ApiOperation({ summary: 'Đăng ký tài khoản mới (Email/Password)' })
+  @ApiBody({ type: RegisterDto })
+  async register(@Body() dto: RegisterDto) {
+    return this.authService.register(dto);
+  }
+
+  @Post('verify-registration')
+  @ApiOperation({ summary: 'Xác thực OTP đăng ký và kích hoạt tài khoản' })
+  @ApiBody({ type: VerifyOtpDto })
+  async verifyRegistration(@Body() dto: VerifyOtpDto) {
+    return this.authService.verifyRegistration(dto);
+  }
+
+  @Post('upgrade-merchant')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Nâng cấp tài khoản lên Merchant (cần đăng nhập)' })
+  @ApiBody({ type: UpgradeMerchantDto })
+  async upgradeToMerchant(
+    @CurrentUser() user: JwtUser,
+    @Body() dto: UpgradeMerchantDto,
+  ) {
+    return this.authService.upgradeToMerchant(user.sub, dto);
   }
 }

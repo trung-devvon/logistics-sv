@@ -6,7 +6,7 @@ import * as argon2 from 'argon2';
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async create(createUserDto: CreateUserDto) {
     const { email, password, fullName, phone } = createUserDto;
@@ -57,7 +57,19 @@ export class UsersService {
    * @param id
    * @returns { id, email, fullName, phone, isActive, roles[code, permissions[code]] }
    */
-  async findOneById(id: string) {
+  async findOneById(id: string): Promise<{
+    id: string;
+    email: string;
+    fullName: string;
+    phone: string | null;
+    isActive: boolean;
+    userRoles: {
+      role: {
+        code: string;
+        rolePermissions: { permission: { code: string } }[];
+      };
+    }[];
+  }> {
     return this.prisma.user.findUnique({
       where: { id },
       select: {
