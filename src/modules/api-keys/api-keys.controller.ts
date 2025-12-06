@@ -13,15 +13,17 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/role.guard';
 import { ApiKeyAuthGuard } from '../../common/guards/api-key.guard';
-import { CreateApiKeyDto } from './dto/create-api-key.dto';
 import {
   ApiTags,
   ApiBearerAuth,
   ApiOperation,
   ApiCreatedResponse,
   ApiOkResponse,
-  ApiSecurity,
+  ApiUnauthorizedResponse,
+  ApiForbiddenResponse,
+  ApiBadRequestResponse,
 } from '@nestjs/swagger';
+import { CreateApiKeyDto } from './dto/create-api-key.dto';
 
 @ApiTags('API Keys')
 @ApiBearerAuth('JWT-auth')
@@ -35,8 +37,11 @@ export class ApiKeysController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('SUPER_ADMIN', 'ADMIN', 'MANAGER', 'PARTNER')
   @Post()
-  @ApiOperation({ summary: 'Tạo API Key mới' })
-  @ApiCreatedResponse({ description: 'Tạo thành công. Trả về API Key (chỉ hiển thị 1 lần).' })
+  @ApiOperation({ summary: 'Create new API Key' })
+  @ApiCreatedResponse({ description: 'API key created successfully' })
+  @ApiBadRequestResponse({ description: 'Invalid input' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiForbiddenResponse({ description: 'Forbidden - insufficient role' })
   async create(@Request() req: any, @Body() dto: CreateApiKeyDto) {
     const userId = req.user.id;
     const keyName = dto.name || 'Partner API Key';
@@ -49,8 +54,9 @@ export class ApiKeysController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('SUPER_ADMIN', 'ADMIN', 'MANAGER', 'PARTNER')
   @Get()
-  @ApiOperation({ summary: 'Lấy danh sách API Key của tôi' })
-  @ApiOkResponse({ description: 'Danh sách API Key đang hoạt động.' })
+  @ApiOperation({ summary: 'List API keys for current user' })
+  @ApiOkResponse({ description: 'List of API keys' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   async list(@Request() req: any) {
     const userId = req.user.id;
     return this.apiKeysService.listApiKeys(userId);
@@ -59,8 +65,10 @@ export class ApiKeysController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('SUPER_ADMIN', 'ADMIN', 'MANAGER', 'PARTNER')
   @Delete(':id')
-  @ApiOperation({ summary: 'Thu hồi (Xóa) API Key' })
-  @ApiOkResponse({ description: 'Thu hồi thành công.' })
+  @ApiOperation({ summary: 'Revoke an API key' })
+  @ApiOkResponse({ description: 'API key revoked' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiForbiddenResponse({ description: 'Forbidden - insufficient role' })
   async revoke(@Request() req: any, @Param('id') id: string) {
     const userId = req.user.id;
     await this.apiKeysService.revokeApiKey(userId, id);
@@ -73,9 +81,8 @@ export class ApiKeysController {
    */
   @UseGuards(ApiKeyAuthGuard) // <--- Bảo vệ bằng API Key
   @Get('test')
-  @ApiSecurity('api-key') // Định nghĩa trong Swagger config
-  @ApiOperation({ summary: 'Test API Key' })
-  @ApiOkResponse({ description: 'API Key hợp lệ.' })
+  @ApiOperation({ summary: 'Test API Key access (X-API-KEY)' })
+  @ApiOkResponse({ description: 'API Key valid' })
   testApiKey(@Request() req: any) {
     return {
       message: 'Success',

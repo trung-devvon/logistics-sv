@@ -48,7 +48,7 @@ import { AdvancedScopeGuard } from '@/common/guards/advanced-scope.guard';
 @ApiBearerAuth('JWT-auth')
 @Controller('orgs')
 export class OrgController {
-  constructor(private readonly service: OrgService) { }
+  constructor(private readonly service: OrgService) {}
   @Roles('SUPER_ADMIN', 'ADMIN', 'MANAGER')
   @UseGuards(JwtAuthGuard, RolesGuard, AdvancedScopeGuard, PermissionsGuard)
   @Post()
@@ -68,11 +68,7 @@ export class OrgController {
   })
   @ApiBadRequestResponse({ description: 'Bad Request - invalid input data' })
   async createOrg(@Body() dto: CreateOrgDto, @CurrentUser() me: JwtUser) {
-    const res = await this.service.createOrg(dto, me.sub);
-    return {
-      message: 'Organization created successfully',
-      data: res,
-    };
+    return await this.service.createOrg(dto, me.sub);
   }
 
   @Get()
@@ -112,11 +108,7 @@ export class OrgController {
     @Query('cursor') cursor?: string,
     @Query('take') take = '20',
   ) {
-    const res = await this.service.listOrgs({ q, cursor, take: Number(take) });
-    return {
-      message: 'Get Organizations successfully',
-      data: res,
-    };
+    return await this.service.listOrgs({ q, cursor, take: Number(take) });
   }
 
   @Get(':id')
@@ -143,11 +135,7 @@ export class OrgController {
   @Permissions('org.read')
   @ApiOkResponse({ type: OrgBrief })
   async getOrg(@Param('id', new ParseUUIDPipe()) id: string) {
-    const res = await this.service.getOrg(id);
-    return {
-      message: 'Get Organization successfully',
-      data: res,
-    };
+    return await this.service.getOrg(id);
   }
   @Roles('SUPER_ADMIN', 'ADMIN', 'MANAGER')
   @UseGuards(JwtAuthGuard, RolesGuard, AdvancedScopeGuard, PermissionsGuard)
@@ -169,11 +157,7 @@ export class OrgController {
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() dto: UpdateOrgDto,
   ) {
-    const res = await this.service.updateOrg(id, dto);
-    return {
-      message: 'Organization updated successfully',
-      data: res,
-    };
+    return await this.service.updateOrg(id, dto);
   }
   @Roles('SUPER_ADMIN', 'ADMIN', 'MANAGER')
   @UseGuards(JwtAuthGuard, RolesGuard, AdvancedScopeGuard, PermissionsGuard)
@@ -192,8 +176,7 @@ export class OrgController {
     description: 'Forbidden - user does not have required role or permission',
   })
   async deleteOrg(@Param('id', new ParseUUIDPipe()) id: string) {
-    const res = await this.service.deleteOrg(id);
-    return { data: res, message: 'Organization deleted successfully' };
+    return await this.service.deleteOrg(id);
   }
 
   // Members
@@ -214,8 +197,7 @@ export class OrgController {
       'Forbidden - user does not have scope access to this organization',
   })
   async listMembers(@Param('id', new ParseUUIDPipe()) id: string) {
-    const items = await this.service.listMembers(id);
-    return { data: items, message: 'Get organization members successfully' };
+    return await this.service.listMembers(id);
   }
   @Roles('SUPER_ADMIN', 'ADMIN', 'MANAGER')
   @UseGuards(JwtAuthGuard, RolesGuard, AdvancedScopeGuard, PermissionsGuard)
@@ -266,11 +248,7 @@ export class OrgController {
     @Param('id', new ParseUUIDPipe()) id: string,
     @Param('userId', new ParseUUIDPipe()) userId: string,
   ) {
-    const res = await this.service.removeMember(id, userId);
-    return {
-      data: res,
-      message: 'User removed from organization successfully',
-    };
+    return await this.service.removeMember(id, userId);
   }
 
   // My memberships
@@ -314,11 +292,7 @@ export class OrgController {
     },
   })
   async myMemberships(@CurrentUser() me: JwtUser) {
-    const res = await this.service.myMemberships(me.sub);
-    return {
-      message: 'Get my organization memberships successfully',
-      data: res,
-    };
+    return await this.service.myMemberships(me.sub);
   }
 
   // Switch Org
@@ -360,10 +334,6 @@ export class OrgController {
     @Param('id', new ParseUUIDPipe()) id: string,
     @CurrentUser() me: JwtUser,
   ) {
-    const res = await this.service.switchOrg(id, me.sub);
-    return {
-      message: 'Switched organization successfully',
-      data: res,
-    };
+    return await this.service.switchOrg(id, me.sub);
   }
 }
