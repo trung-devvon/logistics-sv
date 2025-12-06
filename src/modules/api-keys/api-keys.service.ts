@@ -64,7 +64,6 @@ export class ApiKeysService {
     const tokenPart = rawKey.slice(prefix.length);
     const [publicKey, privateKey] = tokenPart.split('.');
 
-
     if (!publicKey || !privateKey) {
       return null;
     }
@@ -98,7 +97,7 @@ export class ApiKeysService {
     if (inputHash !== apiKeyRecord.keyHash) {
       return null;
     }
-    const {keyHash, ...rest} = apiKeyRecord;
+    const { keyHash, ...rest } = apiKeyRecord;
 
     return rest;
   }
