@@ -42,6 +42,7 @@ import { RolesGuard } from '@/common/guards/role.guard';
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
 import { JwtUser } from '@/common/types/user.types';
 import { PermissionsGuard } from '@/common/guards/permissions.guard';
+import { AdvancedScopeGuard } from '@/common/guards/advanced-scope.guard';
 
 @ApiTags('Orgs')
 @ApiBearerAuth('JWT-auth')
@@ -49,7 +50,7 @@ import { PermissionsGuard } from '@/common/guards/permissions.guard';
 export class OrgController {
   constructor(private readonly service: OrgService) {}
   @Roles('SUPER_ADMIN', 'ADMIN', 'MANAGER')
-  @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard, AdvancedScopeGuard, PermissionsGuard)
   @Post()
   @Permissions('org.create')
   @UseAudit({ entity: 'Org', action: AuditAction.Create })
@@ -75,7 +76,7 @@ export class OrgController {
   }
 
   @Get()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard, AdvancedScopeGuard, PermissionsGuard)
   @Roles(
     'SUPER_ADMIN',
     'ADMIN',
@@ -119,7 +120,7 @@ export class OrgController {
   }
 
   @Get(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard, AdvancedScopeGuard, PermissionsGuard)
   @Roles(
     'SUPER_ADMIN',
     'ADMIN',
@@ -149,7 +150,7 @@ export class OrgController {
     };
   }
   @Roles('SUPER_ADMIN', 'ADMIN', 'MANAGER')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard, AdvancedScopeGuard, PermissionsGuard)
   @Patch(':id')
   @Permissions('org.update')
   @UseAudit({ entity: 'Org', action: AuditAction.Update })
@@ -175,7 +176,7 @@ export class OrgController {
     };
   }
   @Roles('SUPER_ADMIN', 'ADMIN', 'MANAGER')
-  @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard, AdvancedScopeGuard, PermissionsGuard)
   @Delete(':id')
   @Permissions('org.delete')
   @UseAudit({ entity: 'Org', action: AuditAction.Delete })
@@ -197,9 +198,8 @@ export class OrgController {
 
   // Members
   @Roles('SUPER_ADMIN', 'ADMIN', 'MANAGER', 'HUB_MANAGER')
-  @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard, AdvancedScopeGuard, PermissionsGuard)
   @Get(':id/members')
-  @UseGuards(JwtAuthGuard, PermissionsGuard)
   @Permissions('org.members.read')
   @ApiOperation({
     summary: 'Liệt kê thành viên tổ chức',
@@ -218,7 +218,7 @@ export class OrgController {
     return { data: items, message: 'Get organization members successfully' };
   }
   @Roles('SUPER_ADMIN', 'ADMIN', 'MANAGER')
-  @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard, AdvancedScopeGuard, PermissionsGuard)
   @Post(':id/members')
   @Permissions('org.members.assign')
   @UseAudit({ entity: 'UserOrg', action: AuditAction.Create })
@@ -244,7 +244,7 @@ export class OrgController {
     return { data: res, message: 'User assigned to organization successfully' };
   }
   @Roles('SUPER_ADMIN', 'ADMIN')
-  @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard, AdvancedScopeGuard, PermissionsGuard)
   @Delete(':id/members/:userId')
   @Permissions('org.members.remove')
   @UseAudit({ entity: 'UserOrg', action: AuditAction.Delete })
@@ -295,7 +295,7 @@ export class OrgController {
     'FINANCE_MANAGER',
   )
   @Get('/me/memberships')
-  @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard, AdvancedScopeGuard, PermissionsGuard)
   @ApiOperation({
     summary: 'Lấy các tổ chức tôi tham gia',
     description: 'Lấy tất cả tổ chức mà người dùng hiện tại là thành viên.',
@@ -343,7 +343,7 @@ export class OrgController {
     'FINANCE_MANAGER',
   )
   @Post(':id/switch')
-  @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard, AdvancedScopeGuard, PermissionsGuard)
   @Permissions('org.switch')
   @ApiOperation({
     summary: 'Chuyển tổ chức hiện tại',

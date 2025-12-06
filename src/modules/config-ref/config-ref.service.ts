@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { CreateConfigRefDto } from './dto/create-config-ref.dto';
-import { UpdateConfigRefDto } from './dto/update-config-ref.dto';
+import { CreateConfigRefDto } from './dto/create-region.dto.ts';
+import { UpdateConfigRefDto } from './dto/update-region.dto.js';
 
 @Injectable()
 export class ConfigRefService {

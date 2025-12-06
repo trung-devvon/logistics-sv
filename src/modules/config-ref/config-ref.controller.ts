@@ -8,8 +8,8 @@ import {
   Delete,
 } from '@nestjs/common';
 import { ConfigRefService } from './config-ref.service';
-import { CreateConfigRefDto } from './dto/create-config-ref.dto';
-import { UpdateConfigRefDto } from './dto/update-config-ref.dto';
+import { CreateConfigRefDto } from './dto/create-region.dto.ts';
+import { UpdateConfigRefDto } from './dto/update-region.dto';
 
 @Controller('config-ref')
 export class ConfigRefController {
