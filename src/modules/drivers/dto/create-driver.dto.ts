@@ -1,5 +1,13 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsUUID } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsDateString, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
+
+
+export enum DriverStatus {
+    AVAILABLE = 'AVAILABLE',
+    BUSY = 'BUSY',
+    OFF = 'OFF',
+    SUSPENDED = 'SUSPENDED',
+}
 
 export class CreateDriverDto {
     // GỢI Ý:
@@ -12,8 +20,18 @@ export class CreateDriverDto {
     @IsNotEmpty()
     userId: string;
 
-    @ApiProperty({ description: 'Số bằng lái', example: '123456789' })
+    @ApiProperty({ description: 'Số bằng lái', example: 'B2-12345678' })
     @IsString()
     @IsNotEmpty()
     licenseNo: string;
+
+    @ApiPropertyOptional({ enum: DriverStatus, default: DriverStatus.AVAILABLE })
+    @IsOptional()
+    @IsEnum(DriverStatus)
+    status?: string;
+
+    @ApiPropertyOptional()
+    @IsOptional()
+    @IsDateString()
+    hiredAt?: string;
 }
