@@ -32,7 +32,7 @@ export class OrgRepository {
           ],
         }
       : {};
-    const items = await this.prisma.org.findMany({
+    const data = await this.prisma.org.findMany({
       where,
       take: opts.take,
       skip: opts.cursor ? 1 : 0,
@@ -40,8 +40,8 @@ export class OrgRepository {
       orderBy: { createdAt: 'desc' },
       select: { id: true, name: true, code: true, createdAt: true },
     });
-    const nextCursor = items.length === opts.take ? items.at(-1).id : null;
-    return { items, nextCursor };
+    const nextCursor = data.length === opts.take ? data.at(-1).id : null;
+    return { data, nextCursor };
   }
 
   getOrgById(id: string) {
