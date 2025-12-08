@@ -15,6 +15,7 @@ import { HubsModule } from './modules/hubs/hubs.module';
 import { DriversModule } from './modules/drivers/drivers.module';
 import { VehiclesModule } from './modules/vehicles/vehicles.module';
 import { ConfigRefModule } from './modules/config-ref/config-ref.module';
+import { OrdersModule } from './modules/orders/orders.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -41,6 +42,7 @@ import { ConfigRefModule } from './modules/config-ref/config-ref.module';
     DriversModule,
     VehiclesModule,
     ConfigRefModule,
+    OrdersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
