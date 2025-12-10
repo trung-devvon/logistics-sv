@@ -1,0 +1,43 @@
+version: "3.8"
+
+services:
+  # redis service
+  redis:
+    image: redis:7-alpine
+    container_name: droppa_redis
+    command: >
+      --requirepass ${REDIS_PASSWORD}
+      --maxmemory 512mb
+      --maxmemory-policy noeviction
+      --appendonly yes
+      --save ""
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - app_network
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 1G
+
+  redis_commander:
+    image: rediscommander/redis-commander:latest
+    platform: linux/amd64
+    container_name: droppa_redis_commander
+    environment:
+      - REDIS_HOSTS=local:redis:6379:0:${REDIS_PASSWORD}
+    ports:
+      - "8081:8081"
+    depends_on:
+      - redis
+    networks:
+      - app_network
+
+volumes:
+  redis_data:
+
+networks:
+  app_network:

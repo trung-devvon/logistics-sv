@@ -15,7 +15,11 @@ import { HubsModule } from './modules/hubs/hubs.module';
 import { DriversModule } from './modules/drivers/drivers.module';
 import { VehiclesModule } from './modules/vehicles/vehicles.module';
 import { ConfigRefModule } from './modules/config-ref/config-ref.module';
+import { BullModule } from '@nestjs/bullmq';
+import { ConfigService } from '@nestjs/config';
+import { CacheModule } from '@nestjs/cache-manager';
 import { OrdersModule } from './modules/orders/orders.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -43,8 +47,33 @@ import { OrdersModule } from './modules/orders/orders.module';
     VehiclesModule,
     ConfigRefModule,
     OrdersModule,
+    BullModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        connection: {
+          host: configService.get('REDIS_HOST'),
+          port: configService.get('REDIS_PORT'),
+          password: configService.get('REDIS_PASSWORD'),
+          // Cấu hình TLS nếu có dùng Redis online (AWS ElastiCache, Upstash)
+          tls: configService.get('REDIS_TLS') === 'true' ? {} : undefined,
+        },
+      }),
+      inject: [ConfigService],
+    }),
+    CacheModule.registerAsync({
+      isGlobal: true,
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        store: await import('cache-manager-redis-store'),
+        host: configService.get('REDIS_HOST'),
+        port: configService.get('REDIS_PORT'),
+        password: configService.get('REDIS_PASSWORD'),
+        ttl: 60000, // Cache TTL mặc định 60 giây
+      }),
+      inject: [ConfigService],
+    }),
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }
