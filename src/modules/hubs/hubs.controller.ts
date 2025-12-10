@@ -8,35 +8,35 @@ import {
   Delete,
   UseGuards,
   Query,
+  UseInterceptors,
 } from '@nestjs/common';
 import { HubsService } from './hubs.service';
 import { CreateHubDto } from './dto/create-hub.dto';
 import { UpdateHubDto } from './dto/update-hub.dto';
 import {
   ApiBearerAuth,
-  ApiCreatedResponse,
-  ApiOkResponse,
   ApiOperation,
   ApiTags,
-  ApiQuery,
+  ApiResponse,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import { RolesGuard } from '@/common/guards/role.guard';
 import { Roles } from '@/common/decorators/roles.decorator';
 
 import { FilterHubDto } from './dto/filter-hub.dto';
+import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
 
+@Controller('hubs')
 @ApiTags('Hubs')
 @ApiBearerAuth('JWT-auth')
-@Controller('hubs')
 export class HubsController {
   constructor(private readonly hubsService: HubsService) { }
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('SUPER_ADMIN', 'ADMIN', 'MANAGER')
-  @ApiOperation({ summary: 'Tạo Hub/Kho mới' })
-  @ApiCreatedResponse({ description: 'Tạo thành công' })
+  @Roles('SUPER_ADMIN', 'ADMIN')
+  @ApiOperation({ summary: 'Create a new hub' })
+  @ApiResponse({ status: 201, description: 'The hub has been successfully created.' })
   create(@Body() createHubDto: CreateHubDto) {
     return this.hubsService.create(createHubDto);
   }
@@ -52,8 +52,10 @@ export class HubsController {
     'SORTER',
     'COURIER',
   )
-  @ApiOperation({ summary: 'Lấy danh sách Hub (có phân trang & lọc)' })
-  @ApiOkResponse({ description: 'Danh sách Hub' })
+  @UseInterceptors(CacheInterceptor)
+  @CacheTTL(30000) // Cache 30 giây (override default)
+  @ApiOperation({ summary: 'Retrieve all hubs with pagination and filter' })
+  @ApiResponse({ status: 200, description: 'List of hubs with pagination metadata.' })
   findAll(@Query() query: FilterHubDto) {
     return this.hubsService.findAll(query);
   }
@@ -69,8 +71,8 @@ export class HubsController {
     'SORTER',
     'COURIER',
   )
-  @ApiOperation({ summary: 'Lấy chi tiết Hub' })
-  @ApiOkResponse({ description: 'Chi tiết Hub' })
+  @ApiOperation({ summary: 'Retrieve a hub by ID' })
+  @ApiResponse({ status: 200, description: 'Hub details' })
   findOne(@Param('id') id: string) {
     return this.hubsService.findOne(id);
   }
@@ -78,8 +80,8 @@ export class HubsController {
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('SUPER_ADMIN', 'ADMIN', 'MANAGER', 'HUB_MANAGER')
-  @ApiOperation({ summary: 'Cập nhật Hub' })
-  @ApiOkResponse({ description: 'Cập nhật thành công' })
+  @ApiOperation({ summary: 'Update a hub by ID' })
+  @ApiResponse({ status: 200, description: 'The hub has been successfully updated.' })
   update(@Param('id') id: string, @Body() updateHubDto: UpdateHubDto) {
     return this.hubsService.update(id, updateHubDto);
   }
@@ -87,8 +89,8 @@ export class HubsController {
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('SUPER_ADMIN', 'ADMIN')
-  @ApiOperation({ summary: 'Xóa Hub' })
-  @ApiOkResponse({ description: 'Xóa thành công' })
+  @ApiOperation({ summary: 'Delete a hub by ID' })
+  @ApiResponse({ status: 200, description: 'The hub has been successfully deleted.' })
   remove(@Param('id') id: string) {
     return this.hubsService.remove(id);
   }

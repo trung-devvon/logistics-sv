@@ -1,74 +1,30 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import * as nodemailer from 'nodemailer';
-import * as ejs from 'ejs';
-import * as path from 'path';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
 
 @Injectable()
 export class MailService {
-  private transporter: nodemailer.Transporter;
-
-  constructor(private configService: ConfigService) {
-    // Cấu hình SMTP từ .env
-    this.transporter = nodemailer.createTransport({
-      host: this.configService.get<string>('mail.host'),
-      port: this.configService.get<number>('mail.port'),
-      secure: false, // true cho port 465, false cho các port khác
-      auth: {
-        user: this.configService.get<string>('mail.user'),
-        pass: this.configService.get<string>('mail.password'),
-      },
-    });
-  }
+  constructor(@InjectQueue('mail') private mailQueue: Queue) { }
 
   /**
-   * Gửi Email OTP Reset Password
+   * Send User Confirmation Email via Queue
    */
   async sendUserConfirmation(email: string, name: string, otp: string) {
-    // 1. Tìm đường dẫn đến file template
-    const templatePath = path.join(
-      process.cwd(),
-      'src/integrations/mail/templates/reset-password.ejs',
-    );
-
-    // 2. Render template với dữ liệu
-    const html = await ejs.renderFile(templatePath, {
-      name: name || 'Quý khách',
-      otp: otp,
-    });
-
-    // 3. Gửi email
-    await this.transporter.sendMail({
-      from: '"Logistics App Support" <no-reply@logistics.com>', // Tên người gửi
+    await this.mailQueue.add('send-otp', {
       to: email,
-      subject: 'Mã xác thực đặt lại mật khẩu (OTP)',
-      html: html,
+      name,
+      otp,
     });
-
-    console.log(`📧 Đã gửi OTP ${otp} đến ${email}`);
   }
 
   /**
-   * Gửi Email OTP Đăng ký tài khoản
+   * Send Registration OTP via Queue
    */
   async sendRegistrationOtp(email: string, otp: string) {
-    const templatePath = path.join(
-      process.cwd(),
-      'src/integrations/mail/templates/register-otp.ejs',
-    );
-
-    const html = await ejs.renderFile(templatePath, {
-      name: email, // Ban đầu chưa có tên, dùng email tạm hoặc để trống
-      otp: otp,
-    });
-
-    await this.transporter.sendMail({
-      from: '"Logistics App Support" <no-reply@logistics.com>',
+    await this.mailQueue.add('send-otp', {
       to: email,
-      subject: 'Xác thực đăng ký tài khoản (OTP)',
-      html: html,
+      name: email, // Temporary name
+      otp,
     });
-
-    console.log(`📧 Đã gửi OTP đăng ký ${otp} đến ${email}`);
   }
 }
