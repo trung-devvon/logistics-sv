@@ -1,0 +1,2935 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/": {
+      "get": {
+        "operationId": "AppController_getHello",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "App"
+        ]
+      }
+    },
+    "/users/add-user": {
+      "post": {
+        "operationId": "UsersController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User registered successfully"
+          },
+          "400": {
+            "description": "Invalid input data"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden - Admin/Manager only"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Register new user (Admin/Manager only)",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "operationId": "AuthController_login",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Đăng nhập thành công"
+          },
+          "400": {
+            "description": "Dữ liệu không hợp lệ"
+          },
+          "403": {
+            "description": "Sai email hoặc mật khẩu"
+          },
+          "409": {
+            "description": "Xung đột dữ liệu"
+          }
+        },
+        "summary": "Đăng nhập",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/refresh-tokens": {
+      "post": {
+        "operationId": "AuthController_refreshTokens",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Làm mới token thành công"
+          },
+          "403": {
+            "description": "Refresh token không hợp lệ hoặc đã hết hạn"
+          }
+        },
+        "security": [
+          {
+            "refresh-token": []
+          }
+        ],
+        "summary": "Làm mới access token và refresh token",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/forgot-password": {
+      "post": {
+        "operationId": "AuthController_forgotPassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmailForgotPasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Đã gửi OTP đến email"
+          },
+          "400": {
+            "description": "Email không hợp lệ"
+          }
+        },
+        "summary": "Gửi OTP đặt lại mật khẩu",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/reset-password": {
+      "post": {
+        "operationId": "AuthController_resetPassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PasswordResetDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Đặt lại mật khẩu thành công"
+          },
+          "400": {
+            "description": "OTP không hợp lệ hoặc đã hết hạn"
+          }
+        },
+        "summary": "Xác minh OTP và đặt lại mật khẩu mới",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/change-password": {
+      "post": {
+        "operationId": "AuthController_changePassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Đổi mật khẩu thành công"
+          },
+          "400": {
+            "description": "Dữ liệu không hợp lệ"
+          },
+          "403": {
+            "description": "Token không hợp lệ hoặc hết hạn"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Đổi mật khẩu (yêu cầu đăng nhập)",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "operationId": "AuthController_logout",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Đăng xuất thành công"
+          }
+        },
+        "summary": "Đăng xuất",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/register": {
+      "post": {
+        "operationId": "AuthController_register",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "Đăng ký tài khoản mới (Email/Password)",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/verify-registration": {
+      "post": {
+        "operationId": "AuthController_verifyRegistration",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyOtpDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "Xác thực OTP đăng ký và kích hoạt tài khoản",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/upgrade-merchant": {
+      "post": {
+        "operationId": "AuthController_upgradeToMerchant",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpgradeMerchantDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Nâng cấp tài khoản lên Merchant (cần đăng nhập)",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api-keys": {
+      "post": {
+        "operationId": "ApiKeysController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateApiKeyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "API key created successfully"
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden - insufficient role"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Create new API Key",
+        "tags": [
+          "API Keys"
+        ]
+      },
+      "get": {
+        "operationId": "ApiKeysController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of API keys"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List API keys for current user",
+        "tags": [
+          "API Keys"
+        ]
+      }
+    },
+    "/api-keys/{id}": {
+      "delete": {
+        "operationId": "ApiKeysController_revoke",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "API key revoked"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden - insufficient role"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Revoke an API key",
+        "tags": [
+          "API Keys"
+        ]
+      }
+    },
+    "/api-keys/test": {
+      "get": {
+        "operationId": "ApiKeysController_testApiKey",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "API Key valid"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Test API Key access (X-API-KEY)",
+        "tags": [
+          "API Keys"
+        ]
+      }
+    },
+    "/orgs": {
+      "post": {
+        "description": "Tạo một tổ chức mới. Chỉ các vai trò SUPER_ADMIN, ADMIN hoặc MANAGER mới có thể tạo tổ chức.",
+        "operationId": "OrgController_createOrg",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOrgDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrgBrief"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - invalid input data"
+          },
+          "401": {
+            "description": "Unauthorized - missing or invalid JWT token"
+          },
+          "403": {
+            "description": "Forbidden - user does not have required role or permission"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Tạo tổ chức mới",
+        "tags": [
+          "Orgs"
+        ]
+      },
+      "get": {
+        "description": "Trả về danh sách tổ chức phân trang. Hỗ trợ phân trang theo cursor và tìm kiếm theo tên hoặc mã.",
+        "operationId": "OrgController_listOrgs",
+        "parameters": [
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Search query for org name or code",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "description": "Pagination cursor",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "take",
+            "required": false,
+            "in": "query",
+            "description": "Number of items to return (default: 20)",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListOrgsResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Liệt kê tổ chức",
+        "tags": [
+          "Orgs"
+        ]
+      }
+    },
+    "/orgs/{id}": {
+      "get": {
+        "description": "Lấy thông tin tổ chức theo ID. Người dùng phải có phạm vi truy cập (scope) với tổ chức đó.",
+        "operationId": "OrgController_getOrg",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Organization ID (UUID)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrgBrief"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - user does not have scope access to this organization"
+          },
+          "404": {
+            "description": "Organization not found"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Lấy tổ chức theo ID",
+        "tags": [
+          "Orgs"
+        ]
+      },
+      "patch": {
+        "description": "Cập nhật thông tin tổ chức (ví dụ: tên). Chỉ SUPER_ADMIN, ADMIN hoặc MANAGER có thể cập nhật.",
+        "operationId": "OrgController_updateOrg",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Organization ID (UUID)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateOrgDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrgBrief"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - user does not have required role or permission"
+          },
+          "404": {
+            "description": "Organization not found"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Cập nhật tổ chức",
+        "tags": [
+          "Orgs"
+        ]
+      },
+      "delete": {
+        "description": "Xóa tổ chức và tất cả dữ liệu liên quan. Chỉ SUPER_ADMIN, ADMIN hoặc MANAGER có thể xóa.",
+        "operationId": "OrgController_deleteOrg",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Organization ID (UUID)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - user does not have required role or permission"
+          },
+          "404": {
+            "description": "Organization not found"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Xóa tổ chức",
+        "tags": [
+          "Orgs"
+        ]
+      }
+    },
+    "/orgs/{id}/members": {
+      "get": {
+        "description": "Lấy tất cả thành viên của một tổ chức cụ thể. Người dùng phải có phạm vi truy cập với tổ chức đó.",
+        "operationId": "OrgController_listMembers",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Organization ID (UUID)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListMembersResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - user does not have scope access to this organization"
+          },
+          "404": {
+            "description": "Organization not found"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Liệt kê thành viên tổ chức",
+        "tags": [
+          "Orgs"
+        ]
+      },
+      "post": {
+        "description": "Thêm user vào tổ chức với vai trò thành viên. Chỉ SUPER_ADMIN, ADMIN hoặc MANAGER có thể gán thành viên.",
+        "operationId": "OrgController_assignMember",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Organization ID (UUID)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignMemberDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - invalid user ID or user already member"
+          },
+          "403": {
+            "description": "Forbidden - user does not have required role or permission"
+          },
+          "404": {
+            "description": "Organization or user not found"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Gán thành viên vào tổ chức",
+        "tags": [
+          "Orgs"
+        ]
+      }
+    },
+    "/orgs/{id}/members/{userId}": {
+      "delete": {
+        "description": "Gỡ user ra khỏi tổ chức. Chỉ SUPER_ADMIN, ADMIN hoặc MANAGER có thể thực hiện.",
+        "operationId": "OrgController_removeMember",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Organization ID (UUID)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "description": "User ID (UUID)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - user does not have required role or permission"
+          },
+          "404": {
+            "description": "Organization or user membership not found"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Gỡ thành viên khỏi tổ chức",
+        "tags": [
+          "Orgs"
+        ]
+      }
+    },
+    "/orgs/me/memberships": {
+      "get": {
+        "description": "Lấy tất cả tổ chức mà người dùng hiện tại là thành viên.",
+        "operationId": "OrgController_myMemberships",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "properties": {
+                      "orgId": {
+                        "type": "string"
+                      },
+                      "code": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Lấy các tổ chức tôi tham gia",
+        "tags": [
+          "Orgs"
+        ]
+      }
+    },
+    "/orgs/{id}/switch": {
+      "post": {
+        "description": "Chuyển ngữ cảnh người dùng sang một tổ chức khác và trả về access token mới có phạm vi (scope) của tổ chức đó.",
+        "operationId": "OrgController_switchOrg",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Organization ID (UUID)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SwitchOrgResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - user is not a member of this organization"
+          },
+          "404": {
+            "description": "Organization not found"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Chuyển tổ chức hiện tại",
+        "tags": [
+          "Orgs"
+        ]
+      }
+    },
+    "/hubs": {
+      "post": {
+        "operationId": "HubsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateHubDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Tạo thành công"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Tạo Hub/Kho mới",
+        "tags": [
+          "Hubs"
+        ]
+      },
+      "get": {
+        "operationId": "HubsController_findAll",
+        "parameters": [
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Tìm kiếm theo tên hoặc địa chỉ",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "orgId",
+            "required": false,
+            "in": "query",
+            "description": "Lọc theo ID Tổ chức",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Trang hiện tại (mặc định 1)",
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Số lượng item mỗi trang (mặc định 10)",
+            "schema": {
+              "default": 10,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Danh sách Hub"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Lấy danh sách Hub (có phân trang & lọc)",
+        "tags": [
+          "Hubs"
+        ]
+      }
+    },
+    "/hubs/{id}": {
+      "get": {
+        "operationId": "HubsController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Chi tiết Hub"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Lấy chi tiết Hub",
+        "tags": [
+          "Hubs"
+        ]
+      },
+      "patch": {
+        "operationId": "HubsController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateHubDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cập nhật thành công"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Cập nhật Hub",
+        "tags": [
+          "Hubs"
+        ]
+      },
+      "delete": {
+        "operationId": "HubsController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Xóa thành công"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Xóa Hub",
+        "tags": [
+          "Hubs"
+        ]
+      }
+    },
+    "/drivers": {
+      "post": {
+        "operationId": "DriversController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDriverDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Driver created successfully."
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Create a new driver from existing user",
+        "tags": [
+          "Drivers"
+        ]
+      },
+      "get": {
+        "operationId": "DriversController_findAll",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "AVAILABLE",
+                "BUSY",
+                "OFF",
+                "SUSPENDED"
+              ]
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Tìm theo tên, số điện thoại",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 10,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of drivers."
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get all drivers",
+        "tags": [
+          "Drivers"
+        ]
+      }
+    },
+    "/drivers/{id}": {
+      "get": {
+        "operationId": "DriversController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Driver retrieved successfully."
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get a driver by ID",
+        "tags": [
+          "Drivers"
+        ]
+      },
+      "patch": {
+        "operationId": "DriversController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateDriverDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Driver updated successfully."
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Update a driver by ID",
+        "tags": [
+          "Drivers"
+        ]
+      },
+      "delete": {
+        "operationId": "DriversController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Driver deleted successfully."
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Delete a driver by ID",
+        "tags": [
+          "Drivers"
+        ]
+      }
+    },
+    "/vehicles": {
+      "post": {
+        "operationId": "VehiclesController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateVehicleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Tạo xe thành công"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Tạo xe mới",
+        "tags": [
+          "Vehicles"
+        ]
+      },
+      "get": {
+        "operationId": "VehiclesController_findAll",
+        "parameters": [
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Tìm theo biển số",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Lọc theo trạng thái",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "AVAILABLE",
+                "IN_SERVICE",
+                "MAINTENANCE",
+                "INACTIVE"
+              ]
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Trang hiện tại (mặc định 1)",
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Số lượng item mỗi trang (mặc định 10)",
+            "schema": {
+              "default": 10,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Danh sách xe"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get List Vehicle (pag & filter)",
+        "tags": [
+          "Vehicles"
+        ]
+      }
+    },
+    "/vehicles/{id}": {
+      "get": {
+        "operationId": "VehiclesController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Chi tiết xe"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Lấy chi tiết xe",
+        "tags": [
+          "Vehicles"
+        ]
+      },
+      "patch": {
+        "operationId": "VehiclesController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateVehicleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cập nhật thành công"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Cập nhật xe",
+        "tags": [
+          "Vehicles"
+        ]
+      },
+      "delete": {
+        "operationId": "VehiclesController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Xóa thành công"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Xóa xe",
+        "tags": [
+          "Vehicles"
+        ]
+      }
+    },
+    "/configs/regions": {
+      "post": {
+        "operationId": "ConfigRefController_createRegion",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRegionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegionRow"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Configs"
+        ]
+      },
+      "get": {
+        "operationId": "ConfigRefController_listRegions",
+        "parameters": [
+          {
+            "name": "q",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "active",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListRegionsResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Configs"
+        ]
+      }
+    },
+    "/configs/regions/{id}": {
+      "get": {
+        "operationId": "ConfigRefController_getRegion",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegionRow"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Configs"
+        ]
+      },
+      "patch": {
+        "operationId": "ConfigRefController_updateRegion",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateRegionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegionRow"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Configs"
+        ]
+      },
+      "delete": {
+        "operationId": "ConfigRefController_deleteRegion",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Configs"
+        ]
+      }
+    },
+    "/configs/service-levels": {
+      "post": {
+        "operationId": "ConfigRefController_createServiceLevel",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateServiceLevelDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceLevelRow"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Configs"
+        ]
+      }
+    },
+    "/configs/orgs/{orgId}/service-levels": {
+      "get": {
+        "operationId": "ConfigRefController_listServiceLevels",
+        "parameters": [
+          {
+            "name": "orgId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "active",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListServiceLevelsResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Configs"
+        ]
+      }
+    },
+    "/configs/service-levels/{id}": {
+      "get": {
+        "operationId": "ConfigRefController_getServiceLevel",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceLevelRow"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Configs"
+        ]
+      },
+      "patch": {
+        "operationId": "ConfigRefController_updateServiceLevel",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateServiceLevelDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceLevelRow"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Configs"
+        ]
+      },
+      "delete": {
+        "operationId": "ConfigRefController_deleteServiceLevel",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Configs"
+        ]
+      }
+    },
+    "/orders": {
+      "post": {
+        "operationId": "OrderController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOrderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Create order"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Orders"
+        ]
+      },
+      "get": {
+        "operationId": "OrderController_search",
+        "parameters": [
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "CREATED",
+                "ASSIGNED",
+                "IN_TRANSIT",
+                "DELIVERED",
+                "FAILED",
+                "RETURNED"
+              ]
+            }
+          },
+          {
+            "name": "createdFrom",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "createdTo",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "createdAt:desc",
+              "type": "string"
+            }
+          },
+          {
+            "name": "skip",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "0",
+              "type": "string"
+            }
+          },
+          {
+            "name": "take",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "20",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Search orders"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Orders"
+        ]
+      }
+    },
+    "/orders/{id}": {
+      "get": {
+        "operationId": "OrderController_getById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get order by id"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Orders"
+        ]
+      },
+      "patch": {
+        "operationId": "OrderController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateOrderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Update order data"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Orders"
+        ]
+      },
+      "delete": {
+        "operationId": "OrderController_delete",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Delete order"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Orders"
+        ]
+      }
+    },
+    "/orders/{id}/status": {
+      "patch": {
+        "operationId": "OrderController_changeStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateOrderStatusDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Change order status"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Orders"
+        ]
+      }
+    },
+    "/orders/{id}/history": {
+      "get": {
+        "operationId": "OrderController_history",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Order history"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Orders"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "My Logistics API",
+    "description": "API documentation for My Logistics application",
+    "version": "1.0.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [
+    {
+      "url": "http://localhost:3000"
+    },
+    {
+      "url": "http://172.28.224.1:3000"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "access-token": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http",
+        "name": "JWT",
+        "description": "Enter access token",
+        "in": "header"
+      },
+      "refresh-token": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http",
+        "description": "Enter refresh token đây",
+        "in": "header"
+      }
+    },
+    "schemas": {
+      "CreateUserDto": {
+        "type": "object",
+        "properties": {
+          "fullName": {
+            "type": "string",
+            "example": "John Doe"
+          },
+          "email": {
+            "type": "string",
+            "example": "user@example.com",
+            "description": "Email address of the user"
+          },
+          "phone": {
+            "type": "string",
+            "example": "+84123456789",
+            "description": "Phone number of the user"
+          },
+          "password": {
+            "type": "string",
+            "example": "P@ssword1234",
+            "description": "Password for the user account"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "LoginDto": {
+        "type": "object",
+        "properties": {
+          "identifier": {
+            "type": "string",
+            "description": "Nhập Email hoặc Số điện thoại",
+            "example": "user@example.com"
+          },
+          "password": {
+            "type": "string",
+            "description": "Mật khẩu",
+            "example": "YourPassword123"
+          }
+        },
+        "required": [
+          "identifier",
+          "password"
+        ]
+      },
+      "EmailForgotPasswordDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "Email",
+            "example": "user@example.com"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "PasswordResetDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "Email",
+            "example": "user@example.com"
+          },
+          "otp": {
+            "type": "string",
+            "description": "OTP",
+            "example": "123456"
+          },
+          "newPassword": {
+            "type": "string",
+            "description": "New password",
+            "example": "YourNewPassword123"
+          }
+        },
+        "required": [
+          "email",
+          "otp",
+          "newPassword"
+        ]
+      },
+      "ChangePasswordDto": {
+        "type": "object",
+        "properties": {
+          "oldPassword": {
+            "type": "string",
+            "description": "Old password",
+            "example": "YourOldPassword123"
+          },
+          "newPassword": {
+            "type": "string",
+            "description": "New password",
+            "example": "YourNewPassword123"
+          }
+        },
+        "required": [
+          "oldPassword",
+          "newPassword"
+        ]
+      },
+      "RegisterDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "VerifyOtpDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpgradeMerchantDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateApiKeyDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Tên gợi nhớ cho API Key",
+            "example": "Integration Key for Partner X"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "CreateOrgDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string",
+            "description": "Unique code, uppercase letters/digits/underscore"
+          }
+        },
+        "required": [
+          "name",
+          "code"
+        ]
+      },
+      "OrgBrief": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "code",
+          "createdAt"
+        ]
+      },
+      "ListOrgsResponse": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrgBrief"
+            }
+          },
+          "nextCursor": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "items",
+          "nextCursor"
+        ]
+      },
+      "UpdateOrgDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "MemberRow": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "fullName": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "userId",
+          "email",
+          "fullName"
+        ]
+      },
+      "ListMembersResponse": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MemberRow"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "AssignMemberDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "userId"
+        ]
+      },
+      "SwitchOrgResponse": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "accessToken"
+        ]
+      },
+      "CreateHubDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Tên Hub/Kho",
+            "example": "Kho Tổng Hà Nội"
+          },
+          "address": {
+            "type": "string",
+            "description": "Địa chỉ chi tiết",
+            "example": "123 Đường ABC, Quận XYZ"
+          },
+          "lat": {
+            "type": "number",
+            "description": "Vĩ độ",
+            "example": 21.0285
+          },
+          "lng": {
+            "type": "number",
+            "description": "Kinh độ",
+            "example": 105.8542
+          },
+          "orgId": {
+            "type": "string",
+            "description": "ID Tổ chức quản lý (nếu có)",
+            "example": "uuid-string"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "UpdateHubDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Tên Hub/Kho",
+            "example": "Kho Tổng Hà Nội"
+          },
+          "address": {
+            "type": "string",
+            "description": "Địa chỉ chi tiết",
+            "example": "123 Đường ABC, Quận XYZ"
+          },
+          "lat": {
+            "type": "number",
+            "description": "Vĩ độ",
+            "example": 21.0285
+          },
+          "lng": {
+            "type": "number",
+            "description": "Kinh độ",
+            "example": 105.8542
+          },
+          "orgId": {
+            "type": "string",
+            "description": "ID Tổ chức quản lý (nếu có)",
+            "example": "uuid-string"
+          }
+        }
+      },
+      "CreateDriverDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "description": "ID của User (đã đăng ký)",
+            "example": "uuid..."
+          },
+          "licenseNo": {
+            "type": "string",
+            "description": "Số bằng lái",
+            "example": "B2-12345678"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "AVAILABLE",
+              "BUSY",
+              "OFF",
+              "SUSPENDED"
+            ],
+            "default": "AVAILABLE"
+          },
+          "hiredAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "userId",
+          "licenseNo"
+        ]
+      },
+      "UpdateDriverDto": {
+        "type": "object",
+        "properties": {
+          "licenseNo": {
+            "type": "string",
+            "description": "Số bằng lái",
+            "example": "B2-12345678"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "AVAILABLE",
+              "BUSY",
+              "OFF",
+              "SUSPENDED"
+            ],
+            "default": "AVAILABLE"
+          },
+          "hiredAt": {
+            "type": "string"
+          }
+        }
+      },
+      "CreateVehicleDto": {
+        "type": "object",
+        "properties": {
+          "plateNumber": {
+            "type": "string",
+            "description": "Biển số xe",
+            "example": "29H-12345"
+          },
+          "type": {
+            "type": "string",
+            "description": "Loại xe",
+            "example": "Truck"
+          },
+          "capacityKg": {
+            "type": "number",
+            "description": "Tải trọng (kg)",
+            "example": 1000
+          },
+          "capacityM3": {
+            "type": "number",
+            "description": "Thể tích (m3)",
+            "example": 5.5
+          },
+          "status": {
+            "type": "string",
+            "description": "Trạng thái xe",
+            "enum": [
+              "AVAILABLE",
+              "IN_SERVICE",
+              "MAINTENANCE",
+              "INACTIVE"
+            ],
+            "example": "AVAILABLE"
+          }
+        },
+        "required": [
+          "plateNumber",
+          "capacityKg",
+          "status"
+        ]
+      },
+      "UpdateVehicleDto": {
+        "type": "object",
+        "properties": {
+          "plateNumber": {
+            "type": "string",
+            "description": "Biển số xe",
+            "example": "29H-12345"
+          },
+          "type": {
+            "type": "string",
+            "description": "Loại xe",
+            "example": "Truck"
+          },
+          "capacityKg": {
+            "type": "number",
+            "description": "Tải trọng (kg)",
+            "example": 1000
+          },
+          "capacityM3": {
+            "type": "number",
+            "description": "Thể tích (m3)",
+            "example": 5.5
+          },
+          "status": {
+            "type": "string",
+            "description": "Trạng thái xe",
+            "enum": [
+              "AVAILABLE",
+              "IN_SERVICE",
+              "MAINTENANCE",
+              "INACTIVE"
+            ],
+            "example": "AVAILABLE"
+          }
+        }
+      },
+      "CreateRegionDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string",
+            "description": "Unique region code (UPPERCASE, digits, underscore)"
+          }
+        },
+        "required": [
+          "name",
+          "code"
+        ]
+      },
+      "RegionRow": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "name",
+          "active",
+          "updatedAt"
+        ]
+      },
+      "ListRegionsResponse": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RegionRow"
+            }
+          },
+          "nextCursor": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "items",
+          "nextCursor"
+        ]
+      },
+      "UpdateRegionDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "active": {
+            "type": "boolean"
+          }
+        }
+      },
+      "CreateServiceLevelDto": {
+        "type": "object",
+        "properties": {
+          "orgId": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string",
+            "description": "Unique code (UPPERCASE, digits, underscore)"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "orgId",
+          "code",
+          "name"
+        ]
+      },
+      "ServiceLevelRow": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "orgId": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "orgId",
+          "code",
+          "name",
+          "active",
+          "updatedAt"
+        ]
+      },
+      "ListServiceLevelsResponse": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceLevelRow"
+            }
+          },
+          "nextCursor": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "items",
+          "nextCursor"
+        ]
+      },
+      "UpdateServiceLevelDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "active": {
+            "type": "boolean"
+          }
+        }
+      },
+      "CreateOrderDto": {
+        "type": "object",
+        "properties": {
+          "externalCode": {
+            "type": "string",
+            "description": "Mã từ hệ thống đối tác"
+          },
+          "senderName": {
+            "type": "string"
+          },
+          "senderPhone": {
+            "type": "string"
+          },
+          "pickupAddress": {
+            "type": "string"
+          },
+          "pickupLat": {
+            "type": "string",
+            "example": "10.762622"
+          },
+          "pickupLng": {
+            "type": "string",
+            "example": "106.660172"
+          },
+          "receiverName": {
+            "type": "string"
+          },
+          "receiverPhone": {
+            "type": "string"
+          },
+          "deliveryAddress": {
+            "type": "string"
+          },
+          "deliveryLat": {
+            "type": "string",
+            "example": "10.762622"
+          },
+          "deliveryLng": {
+            "type": "string",
+            "example": "106.660172"
+          },
+          "weightKg": {
+            "type": "string",
+            "example": "2.5",
+            "description": "kg"
+          },
+          "volumeM3": {
+            "type": "string",
+            "example": "0.02",
+            "description": "m3"
+          },
+          "codAmount": {
+            "type": "string",
+            "example": "150000"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "CREATED",
+              "ASSIGNED",
+              "IN_TRANSIT",
+              "DELIVERED",
+              "FAILED",
+              "RETURNED"
+            ],
+            "default": "CREATED"
+          },
+          "priority": {
+            "type": "number",
+            "description": "0 = normal, 1 = high ..."
+          },
+          "promisedAt": {
+            "type": "string",
+            "description": "ISO datetime promised",
+            "example": "2025-12-31T17:00:00+07:00"
+          }
+        }
+      },
+      "UpdateOrderDto": {
+        "type": "object",
+        "properties": {
+          "externalCode": {
+            "type": "string"
+          },
+          "senderName": {
+            "type": "string"
+          },
+          "senderPhone": {
+            "type": "string"
+          },
+          "pickupAddress": {
+            "type": "string"
+          },
+          "pickupLat": {
+            "type": "string"
+          },
+          "pickupLng": {
+            "type": "string"
+          },
+          "receiverName": {
+            "type": "string"
+          },
+          "receiverPhone": {
+            "type": "string"
+          },
+          "deliveryAddress": {
+            "type": "string"
+          },
+          "deliveryLat": {
+            "type": "string"
+          },
+          "deliveryLng": {
+            "type": "string"
+          },
+          "weightKg": {
+            "type": "string"
+          },
+          "volumeM3": {
+            "type": "string"
+          },
+          "codAmount": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "CREATED",
+              "ASSIGNED",
+              "IN_TRANSIT",
+              "DELIVERED",
+              "FAILED",
+              "RETURNED"
+            ]
+          },
+          "priority": {
+            "type": "number"
+          },
+          "promisedAt": {
+            "type": "string"
+          }
+        }
+      },
+      "UpdateOrderStatusDto": {
+        "type": "object",
+        "properties": {
+          "toStatus": {
+            "type": "string",
+            "enum": [
+              "CREATED",
+              "ASSIGNED",
+              "IN_TRANSIT",
+              "DELIVERED",
+              "FAILED",
+              "RETURNED"
+            ]
+          },
+          "note": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "toStatus"
+        ]
+      }
+    }
+  }
+}
