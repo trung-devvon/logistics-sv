@@ -20,6 +20,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   /**
    * thực thi khi token hợp lệ
    * @param payload { sub: user.id, email: user.email }
+   * @returns
    */
   async validate(payload: any) {
     const user = await this.usersService.findOneById(payload.sub);
@@ -33,6 +34,14 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
           ur.role?.rolePermissions?.map((rp: any) => rp.permission?.code) ?? [],
       ) ?? [];
 
-    return { ...user, sub: user.id, permissions };
+    return {
+      id: user.id,
+      email: user.email,
+      fullName: user.fullName,
+      phone: user.phone,
+      isActive: user.isActive,
+      sub: user.id,
+      permissions,
+    };
   }
 }

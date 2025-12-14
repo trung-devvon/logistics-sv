@@ -1,6 +1,7 @@
 import {
   Controller,
   Post,
+  Get,
   UseGuards,
   Request,
   HttpCode,
@@ -50,12 +51,7 @@ export class AuthController {
   @ApiForbiddenResponse({ description: 'Sai email hoặc mật khẩu' }) // status 403
   @ApiConflictResponse({ description: 'Xung đột dữ liệu' }) // status 409
   async login(@Request() req: any, @Body() loginDto: LoginDto) {
-    const data = await this.authService.login(req.user);
-
-    return {
-      message: 'Đăng nhập thành công',
-      data: data,
-    };
+    return this.authService.login(req.user);
   }
   @UseGuards(JwtRefreshGuard)
   @Post('refresh-tokens')
@@ -68,12 +64,7 @@ export class AuthController {
   async refreshTokens(@Request() req: any) {
     const { id, refreshTokenId } = req.user;
 
-    const data = await this.authService.refreshTokens(id, refreshTokenId);
-
-    return {
-      message: 'Làm mới token thành công',
-      data,
-    };
+    return this.authService.refreshTokens(id, refreshTokenId);
   }
   @HttpCode(HttpStatus.OK)
   @Post('forgot-password')
@@ -81,10 +72,8 @@ export class AuthController {
   @ApiOkResponse({ description: 'Đã gửi OTP đến email' })
   @ApiBadRequestResponse({ description: 'Email không hợp lệ' })
   async forgotPassword(@Body() dto: EmailForgotPasswordDto) {
-    const response = await this.authService.forgotPassword(dto.email);
-    return {
-      message: response.message,
-    };
+    return this.authService.forgotPassword(dto.email);
+    
   }
 
   @HttpCode(HttpStatus.OK)
@@ -93,14 +82,11 @@ export class AuthController {
   @ApiOkResponse({ description: 'Đặt lại mật khẩu thành công' })
   @ApiBadRequestResponse({ description: 'OTP không hợp lệ hoặc đã hết hạn' })
   async resetPassword(@Body() dto: PasswordResetDto) {
-    const response = await this.authService.resetPassword(
+    return this.authService.resetPassword(
       dto.email,
       dto.otp,
       dto.newPassword,
     );
-    return {
-      message: response.message,
-    };
   }
 
   @UseGuards(JwtAuthGuard)
@@ -123,11 +109,7 @@ export class AuthController {
   async logout(@Request() req: any) {
     const { refreshTokenId } = req.user;
 
-    const data = await this.authService.logout(refreshTokenId);
-
-    return {
-      message: data.message,
-    };
+    return this.authService.logout(refreshTokenId);
   }
   @Post('register')
   @ApiOperation({ summary: 'Đăng ký tài khoản mới (Email/Password)' })
@@ -141,6 +123,29 @@ export class AuthController {
   @ApiBody({ type: VerifyOtpDto })
   async verifyRegistration(@Body() dto: VerifyOtpDto) {
     return this.authService.verifyRegistration(dto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('me')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Lấy thông tin user hiện tại (yêu cầu đăng nhập)' })
+  @ApiOkResponse({
+    description: 'Thông tin user với roles và permissions',
+    schema: {
+      example: {
+        id: 'uuid-xxx',
+        email: 'user@example.com',
+        fullName: 'John Doe',
+        phone: '0123456789',
+        isActive: true,
+        roles: ['USER', 'MERCHANT'],
+        permissions: ['orders:read', 'orders:create', 'orders:update'],
+      },
+    },
+  })
+  @ApiForbiddenResponse({ description: 'Token không hợp lệ hoặc hết hạn' })
+  async getCurrentUser(@CurrentUser() user: JwtUser) {
+    return this.authService.getCurrentUser(user);
   }
 
   @Post('upgrade-merchant')
