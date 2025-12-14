@@ -26,7 +26,7 @@ export class AuthService {
     private configService: ConfigService, // 4. Inject ConfigService
     private prisma: PrismaService, // 5. Inject PrismaService
     private mailService: MailService,
-  ) { }
+  ) {}
   /**
    * call by LocalStrategy
    * @param email Email
@@ -55,9 +55,39 @@ export class AuthService {
     };
 
     const { accessToken, refreshToken, refreshTokenId } =
-      await this.generateTokens(payload);
+    await this.generateTokens(payload);
     await this.updateRefreshToken(user.id, refreshToken, refreshTokenId); // <-- Truyền ID vào
-    return { accessToken, refreshToken }; // <-- Vẫn chỉ trả 2 token cho client
+    return { message: 'Đăng nhập thành công', accessToken, refreshToken }; // <-- Vẫn chỉ trả 2 token cho client
+  }
+
+  /**
+   * @param user JwtUser from JWT payload
+   * @returns User info
+   */
+  async getCurrentUser(user: any) {
+    // user from JwtStrategy 
+    const fullUser = await this.usersService.findOneById(user.id);
+
+    if (!fullUser) {
+      throw new NotFoundException('User không tồn tại');
+    }
+
+    // Flatten roles và permissions từ userRoles
+    const roles = fullUser.userRoles.map((ur: any) => ur.role.code);
+    const permissions = fullUser.userRoles.flatMap(
+      (ur: any) =>
+        ur.role.rolePermissions?.map((rp: any) => rp.permission?.code) ?? [],
+    );
+
+    return {
+      id: fullUser.id,
+      email: fullUser.email,
+      fullName: fullUser.fullName,
+      phone: fullUser.phone,
+      isActive: fullUser.isActive,
+      roles: [...new Set(roles)], // Remove duplicates
+      permissions: [...new Set(permissions)],
+    };
   }
 
   async register(dto: RegisterDto) {
@@ -102,7 +132,8 @@ export class AuthService {
     }
 
     return {
-      message: 'Đăng ký thành công. Vui lòng kiểm tra email để lấy mã OTP xác thực.',
+      message:
+        'Đăng ký thành công. Vui lòng kiểm tra email để lấy mã OTP xác thực.',
       userId: newUser.id,
     };
   }
@@ -220,6 +251,7 @@ export class AuthService {
     });
 
     return {
+      message: 'Làm mới access token thành công',
       accessToken: newAccessToken,
     };
   }
