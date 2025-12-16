@@ -1,17 +1,17 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { GeoDistanceController } from './geo-distance.controller';
+import { GeoController } from './geo-distance.controller';
 import { GeoDistanceService } from './geo-distance.service';
 
 describe('GeoDistanceController', () => {
-  let controller: GeoDistanceController;
+  let controller: GeoController;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [GeoDistanceController],
+      controllers: [GeoController],
       providers: [GeoDistanceService],
     }).compile();
 
-    controller = module.get<GeoDistanceController>(GeoDistanceController);
+    controller = module.get<GeoController>(GeoController);
   });
 
   it('should be defined', () => {
