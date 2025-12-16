@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
 import { IGeoCode } from '../interfaces/geo.interface';
+import { PrismaService } from '@/core/prisma/prisma.service';
 
 @Injectable()
 export class GeoRepository {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   // ---------- Geocoding Cache ----------
   findGeocode(orgId: string, raw: string, provider?: string | null) {

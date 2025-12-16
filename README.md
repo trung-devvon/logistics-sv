@@ -29,6 +29,33 @@
 
 ```bash
 $ npm install
+### Prerequisites
+
+- Redis server version 5.0.0 or greater is required (BullMQ dependency).
+- Use the included docker-compose to run a compatible Redis:
+
+```bash
+docker-compose up -d redis
+```
+
+If you have a local Redis service installed on Windows (or elsewhere) with a version below 5.x, either update it to a newer version or start the project's Docker Redis and ensure your `REDIS_HOST`/`REDIS_PORT` environment variables point to it.
+
+### Troubleshooting: "Redis version needs to be greater or equal than 5.0.0"
+
+- This occurs when the app connects to an old Redis server (e.g., Windows port older than 5.x).
+- Quick fixes:
+  - Start a Docker Redis and point env to it:
+
+```bash
+docker-compose up -d redis
+export REDIS_HOST=localhost
+export REDIS_PORT=6379
+```
+
+  - Or upgrade your local Redis to v5.0.0 or newer (WSL recommended for Windows users)
+  - Confirm version: `redis-cli INFO server | grep redis_version` (or connect with redis client)
+  - If you continue to see the BullMQ error, export `NODE_ENV=test` to skip Redis version check in tests.
+
 ```
 
 ## Compile and run the project

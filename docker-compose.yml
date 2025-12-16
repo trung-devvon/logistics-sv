@@ -1,10 +1,8 @@
-version: "3.8"
-
 services:
   # redis service
   redis:
     image: redis:7-alpine
-    container_name: droppa_redis
+    container_name: redis-server
     command: >
       --requirepass ${REDIS_PASSWORD}
       --maxmemory 512mb

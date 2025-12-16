@@ -19,6 +19,7 @@ import { BullModule } from '@nestjs/bullmq';
 import { ConfigService } from '@nestjs/config';
 import { CacheModule } from '@nestjs/cache-manager';
 import { OrdersModule } from './modules/orders/orders.module';
+import { GeoModule } from './modules/geo-distance/geo-distance.module';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { OrdersModule } from './modules/orders/orders.module';
     VehiclesModule,
     ConfigRefModule,
     OrdersModule,
+    GeoModule,
     BullModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({

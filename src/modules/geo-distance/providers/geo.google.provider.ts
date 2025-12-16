@@ -1,9 +1,5 @@
 import axios, { AxiosInstance } from 'axios';
-import {
-  GeoProvider,
-  GeocodeResult,
-  DistanceMatrixResult,
-} from './geo.provider';
+import { GeoProvider } from './geo.provider';
 import {
   IDistanceMatrixResult,
   IGeocodeResult,
