@@ -10,9 +10,10 @@ import { AuditRepository } from '@/common/repository/audit.repository';
 import { AdvancedScopeGuard } from '@/common/guards/advanced-scope.guard';
 import { PermissionsGuard } from '@/common/guards/permissions.guard';
 import { ScopeRepository } from '@/common/repository/scope.repository';
+import { AssignmentModule } from '../assignment/assignment.module';
 
 @Module({
-  imports: [JwtModule.register({}), PrismaModule],
+  imports: [JwtModule.register({}), PrismaModule, AssignmentModule],
   controllers: [DispatcherController],
   providers: [
     AuditRepository,
@@ -25,6 +26,6 @@ import { ScopeRepository } from '@/common/repository/scope.repository';
     DispatcherService,
     DispatcherGateway,
   ],
-  exports: [DispatcherService,
+  exports: [DispatcherService, DispatcherGateway, DispatcherRepository],
 })
 export class DispatcherModule {}

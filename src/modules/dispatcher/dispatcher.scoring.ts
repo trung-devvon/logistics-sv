@@ -1,4 +1,7 @@
-import { IAssignmentScore, IScoreContext } from './types';
+import {
+  IScoreContext,
+  IAssignmentScore,
+} from './interfaces/scoring.interface';
 
 export class DispatcherScoring {
   /**
