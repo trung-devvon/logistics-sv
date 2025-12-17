@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateDriverDto, DriverStatus } from './dto/create-driver.dto';
 import { UpdateDriverDto } from './dto/update-driver.dto';
 import { PrismaService } from '@/core/prisma/prisma.service';
@@ -7,7 +11,7 @@ import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class DriversService {
-  constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService) {}
 
   async create(dto: CreateDriverDto) {
     // 1. check userId (findOne driver where userId) -> if exist throw BadRequest
@@ -24,9 +28,9 @@ export class DriversService {
       where: {
         userId: dto.userId,
       },
-    })
+    });
     if (driver) {
-      throw new BadRequestException('Driver already exists')
+      throw new BadRequestException('Driver already exists');
     }
     const newDriver = await this.prisma.driver.create({
       data: {
@@ -40,18 +44,18 @@ export class DriversService {
           select: {
             id: true,
             fullName: true,
-          }
-        }
-      }
-    })
-    return newDriver
+          },
+        },
+      },
+    });
+    return newDriver;
   }
   async findAll(filter: FilterDriverDto) {
     const { status, search } = filter;
 
-    const where: Prisma.DriverWhereInput = {}
+    const where: Prisma.DriverWhereInput = {};
     if (status) {
-      where.status = status
+      where.status = status;
     }
 
     if (search) {
@@ -62,10 +66,10 @@ export class DriversService {
             OR: [
               { fullName: { contains: search, mode: 'insensitive' } },
               { phone: { contains: search, mode: 'insensitive' } },
-            ]
-          }
-        }
-      ]
+            ],
+          },
+        },
+      ];
     }
 
     const [total, items] = await this.prisma.$transaction([
@@ -77,9 +81,9 @@ export class DriversService {
             select: {
               id: true,
               fullName: true,
-            }
+            },
           },
-          _count: { select: { assignments: true } } // đếm số chuyến đã gán
+          _count: { select: { assignments: true } }, // đếm số chuyến đã gán
         },
         orderBy: { createdAt: 'desc' },
         skip: (filter.page - 1) * filter.limit,
@@ -107,16 +111,16 @@ export class DriversService {
           select: {
             id: true,
             fullName: true,
-          }
+          },
         },
         assignments: {
           where: { vehicleId: { not: null } },
           take: 5,
           orderBy: { assignedAt: 'desc' },
-          include: { vehicle: true }
-        }
+          include: { vehicle: true },
+        },
       },
-    })
+    });
     if (!driver) {
       throw new NotFoundException(`Driver with ID ${id} not found`);
     }
@@ -134,10 +138,9 @@ export class DriversService {
       where: { id },
       data: updateDriverDto,
       include: {
-        user: { select: { fullName: true } }
-      }
+        user: { select: { fullName: true } },
+      },
     });
-
   }
 
   async remove(id: string) {
