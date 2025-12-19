@@ -12,11 +12,13 @@ import { PermissionsGuard } from '@/common/guards/permissions.guard';
 import { AuditRepository } from '@/common/repository/audit.repository';
 import { PrismaModule } from '@/core/prisma/prisma.module';
 import { ScopeRepository } from '@/common/repository/scope.repository';
+import { HttpModule } from '@nestjs/axios';
 @Module({
   imports: [
     EventEmitterModule.forRoot({ wildcard: false }),
     JwtModule.register({}),
     PrismaModule,
+    HttpModule,
   ],
   controllers: [GeoController],
   providers: [

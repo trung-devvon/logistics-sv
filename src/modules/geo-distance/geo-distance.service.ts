@@ -7,7 +7,6 @@ import { HttpService } from '@nestjs/axios';
 import { GeoRepository } from './repositories/geo.repository';
 import { EventEmitter2 } from 'eventemitter2';
 import {
-  LatLng,
   DrivingMatrix,
   IDrivingOptions,
   ILatLng,
@@ -184,8 +183,8 @@ export class GeoService {
   }
 
   async drivingOneToOne(
-    from: LatLng,
-    to: LatLng,
+    from: ILatLng,
+    to: ILatLng,
     options: IDrivingOptions = {},
   ): Promise<DrivingMatrix> {
     const mode = options.mode ?? 'driving';
@@ -291,7 +290,7 @@ export class GeoService {
     return `${lat},${lng}`;
   }
 
-  private haversineMeters(a: LatLng, b: LatLng): number {
+  private haversineMeters(a: ILatLng, b: ILatLng): number {
     const R = 6371000; // m
     const dLat = this.toRad(b.lat - a.lat);
     const dLng = this.toRad(b.lng - a.lng);

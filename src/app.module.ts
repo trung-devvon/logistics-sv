@@ -22,6 +22,7 @@ import { OrdersModule } from './modules/orders/orders.module';
 import { GeoModule } from './modules/geo-distance/geo-distance.module';
 import { AssignmentModule } from './modules/assignment/assignment.module';
 import { DispatcherModule } from './modules/dispatcher/dispatcher.module';
+import { DriverExecutiveModule } from './modules/driver-executive/driver-executive.module';
 
 @Module({
   imports: [
@@ -53,6 +54,7 @@ import { DispatcherModule } from './modules/dispatcher/dispatcher.module';
     GeoModule,
     AssignmentModule,
     DispatcherModule,
+    DriverExecutiveModule,
     BullModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
@@ -63,6 +65,7 @@ import { DispatcherModule } from './modules/dispatcher/dispatcher.module';
           // Cấu hình TLS nếu có dùng Redis online (AWS ElastiCache, Upstash)
           tls: configService.get('REDIS_TLS') === 'true' ? {} : undefined,
         },
+        prefix: configService.get('QUEUE_PREFIX') || 'app',
       }),
       inject: [ConfigService],
     }),
