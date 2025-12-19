@@ -5,6 +5,7 @@ import {
   IDispatcherCandidateDriver,
   IDispatcherCandidateVehicle,
 } from '../interfaces/dispatcher.interface';
+import { IUnassignedShipmentLiteWithStart } from '../interfaces/scoring.interface';
 
 @Injectable()
 export class DispatcherRepository {
@@ -17,8 +18,7 @@ export class DispatcherRepository {
     until?: Date,
     limit = 50,
     offset = 0,
-  ): Promise<IUnassignedShipmentLite[]> {
-    // Shipment chưa có vehicle_assignment
+  ): Promise<IUnassignedShipmentLiteWithStart[]> {
     const rows = await this.prisma.shipment.findMany({
       where: {
         OR: [{ originHub: { orgId } }, { destHub: { orgId } }],
@@ -50,10 +50,18 @@ export class DispatcherRepository {
                 promisedAt: true,
                 weightKg: true,
                 volumeM3: true,
+                pickupLat: true,
+                pickupLng: true,
               },
             },
           },
         },
+        routeStops: {
+          orderBy: { sequenceNo: 'asc' },
+          take: 1,
+          select: { lat: true, lng: true },
+        },
+        originHub: { select: { lat: true, lng: true } },
       },
       orderBy: [{ plannedStart: 'asc' }],
       take: limit,
@@ -62,10 +70,11 @@ export class DispatcherRepository {
 
     return rows.map((r) => {
       const orders = r.shipmentOrders?.map((x) => x.order) ?? [];
-      const promisedAtMax = orders.reduce<Date | null>((acc, o) => {
-        if (!o?.promisedAt) return acc;
-        return acc ? (o.promisedAt > acc ? o.promisedAt : acc) : o.promisedAt;
-      }, null);
+      const promisedAtMax = orders.reduce<Date | null>(
+        (acc, o) =>
+          o?.promisedAt && (!acc || o.promisedAt > acc) ? o.promisedAt : acc,
+        null,
+      );
       const totalWeight = orders.reduce(
         (acc, o) => acc + Number(o?.weightKg ?? 0),
         0,
@@ -74,6 +83,24 @@ export class DispatcherRepository {
         (acc, o) => acc + Number(o?.volumeM3 ?? 0),
         0,
       );
+
+      // Ưu tiên routeStop đầu tiên → nếu trống, fallback pickup đầu tiên của orders → rồi đến hubOrigin
+      const startFromStop = r.routeStops?.[0];
+      const startFromOrder = orders.find((o) => o?.pickupLat && o?.pickupLng);
+      const startLat = startFromStop?.lat
+        ? Number(startFromStop.lat)
+        : startFromOrder?.pickupLat
+          ? Number(startFromOrder.pickupLat)
+          : r.originHub?.lat
+            ? Number(r.originHub.lat)
+            : null;
+      const startLng = startFromStop?.lng
+        ? Number(startFromStop.lng)
+        : startFromOrder?.pickupLng
+          ? Number(startFromOrder.pickupLng)
+          : r.originHub?.lng
+            ? Number(r.originHub.lng)
+            : null;
 
       return {
         id: r.id,
@@ -86,7 +113,9 @@ export class DispatcherRepository {
         ordersCount: orders.length,
         totalWeightKg: String(totalWeight),
         totalVolumeM3: String(totalVolume),
-      } as IUnassignedShipmentLite;
+        startLat: startLat ?? null,
+        startLng: startLng ?? null,
+      } as IUnassignedShipmentLiteWithStart;
     });
   }
 

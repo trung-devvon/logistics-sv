@@ -10,6 +10,7 @@ import {
 } from './interfaces/board.interface';
 import { IDispatchResult } from './interfaces/dispatcher.interface';
 import { DispatcherRepository } from './repositories/dispatcher.repository';
+import { GeoService } from '../geo-distance/geo-distance.service';
 
 @Injectable()
 export class DispatcherService {
@@ -17,6 +18,7 @@ export class DispatcherService {
     private readonly repo: DispatcherRepository,
     private readonly assignment: AssignmentService,
     private readonly gateway: DispatcherGateway,
+    private geo: GeoService,
   ) {}
 
   async getBoard(orgId: string, q: IBoardQuery) {
@@ -73,21 +75,24 @@ export class DispatcherService {
     userId: string | null,
     input: IDispatchAutoInput,
   ): Promise<IDispatchResult> {
-    // Lấy board nhẹ cho 1 shipment → chọn driver/vehicle tốt nhất
     const board = await this.getBoard(orgId, { limit: 200, offset: 0 });
-    const target = board.shipments.find((s) => s.id === input.shipmentId);
+    const target = board.shipments.find((s: any) => s.id === input.shipmentId);
     if (!target)
       throw new BadRequestException('Shipment not found in unassigned list');
 
-    // Heuristic capacity
     const needKg = Number(target.totalWeightKg ?? 0);
     const needM3 = Number(target.totalVolumeM3 ?? 0);
 
+    const startLat =
+      typeof target.startLat === 'number' ? target.startLat : null;
+    const startLng =
+      typeof target.startLng === 'number' ? target.startLng : null;
+
     const candidates = [];
     for (const d of board.drivers) {
-      if (d.activeAssignmentCount > 0) continue; // tránh double-assign
-      // pick a vehicle khả dụng có capacity >= need (nếu không có, cho phép undefined)
-      const v = board.vehicles.find((vh) => {
+      if (d.activeAssignmentCount > 0) continue;
+
+      const v = board.vehicles.find((vh: any) => {
         if (vh.activeAssignmentCount > 0) return false;
         const okKg = vh.capacityKg ? Number(vh.capacityKg) >= needKg : true;
         const okM3 = vh.capacityM3 ? Number(vh.capacityM3) >= needM3 : true;
@@ -99,10 +104,38 @@ export class DispatcherService {
           (v.capacityM3 ? Number(v.capacityM3) >= needM3 : true)
         : true;
 
-      // Giả lập distance/etaPenalty = 0 cho gọn (tích hợp maps nếu muốn)
+      // ====== TÍNH DISTANCE/ETA THẬT ======
+      // From = last location (ưu tiên), else bỏ qua (điểm 0)
+      let distanceKm = 0;
+      let etaPenaltySec = 0;
+
+      if (
+        d.lastLat != null &&
+        d.lastLng != null &&
+        startLat != null &&
+        startLng != null
+      ) {
+        const m = await this.geo.drivingOneToOne(
+          { lat: d.lastLat, lng: d.lastLng },
+          { lat: startLat, lng: startLng },
+        );
+        distanceKm = m.distanceMeters / 1000;
+
+        if (target.promisedAtMax) {
+          const now = Date.now();
+          const slackSec =
+            (new Date(target.promisedAtMax).getTime() - now) / 1000; // còn lại
+          // Hình phạt nếu thời lượng lái > thời gian còn lại tới promise
+          etaPenaltySec = m.durationSeconds - Math.max(slackSec, 0);
+          if (etaPenaltySec < 0) etaPenaltySec = 0;
+        }
+      }
+
       const score = DispatcherScoring.scoreCandidate(d.id, v?.id, {
         capacityOk,
         driverStatusWeight: 30,
+        distanceKm,
+        etaPenaltySec,
       });
       candidates.push(score);
     }

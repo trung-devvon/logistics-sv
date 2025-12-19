@@ -1,3 +1,5 @@
+import { IUnassignedShipmentLite } from './dispatcher.interface';
+
 export interface IScoreContext {
   etaPenaltySec?: number;
   distanceKm?: number;
@@ -10,4 +12,10 @@ export interface IAssignmentScore {
   vehicleId?: string;
   score: number;
   reason?: string;
+}
+
+export interface IUnassignedShipmentLiteWithStart
+  extends IUnassignedShipmentLite {
+  startLat: number;
+  startLng: number;
 }

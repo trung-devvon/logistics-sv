@@ -11,9 +11,10 @@ import { AdvancedScopeGuard } from '@/common/guards/advanced-scope.guard';
 import { PermissionsGuard } from '@/common/guards/permissions.guard';
 import { ScopeRepository } from '@/common/repository/scope.repository';
 import { AssignmentModule } from '../assignment/assignment.module';
+import { GeoModule } from '../geo-distance/geo-distance.module';
 
 @Module({
-  imports: [JwtModule.register({}), PrismaModule, AssignmentModule],
+  imports: [JwtModule.register({}), PrismaModule, AssignmentModule, GeoModule],
   controllers: [DispatcherController],
   providers: [
     AuditRepository,

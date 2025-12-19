@@ -94,4 +94,78 @@ export class GeoRepository {
       },
     });
   }
+
+   async getCache(
+    fromKey: string,
+    toKey: string,
+    provider: string,
+    orgId: string | null,
+  ) {
+    const now = new Date();
+    return this.prisma.distanceMatrixCache.findFirst({
+      where: {
+        fromKey,
+        toKey,
+        provider,
+        ...(orgId ? { orgId } : {}),
+        OR: [{ ttlUntil: null }, { ttlUntil: { gt: now } }],
+      },
+      select: {
+        distanceM: true,
+        durationS: true,
+      },
+    });
+  }
+
+  async upsertCache(args: {
+    orgId: string | null;
+    fromKey: string;
+    toKey: string;
+    provider: string;
+    distanceM: number;
+    durationS: number;
+    ttlSeconds: number;
+  }) {
+    const {
+      orgId,
+      fromKey,
+      toKey,
+      provider,
+      distanceM,
+      durationS,
+      ttlSeconds,
+    } = args;
+    const ttlUntil = new Date(Date.now() + ttlSeconds * 1000);
+
+    // Bảng: distance_matrix_cache (đúng ERD bạn đã cung cấp)
+    // @@unique([fromKey, toKey, provider, orgId], map: "uq_dist_from_to_provider_org")
+    await this.prisma.distanceMatrixCache.upsert({
+      where: {
+        fromKey_toKey_provider_orgId:{
+          fromKey,
+          toKey,
+          provider,
+          orgId: orgId ?? undefined,
+        } as any,
+      },
+      update: {
+        distanceM,
+        durationS,
+        ttlUntil,
+        createdAt: new Date(), // optional: cập nhật lần cuối
+      },
+      create: {
+        id: crypto.randomUUID(),
+        orgId: orgId ?? undefined,
+        requestedBy: null,
+        fromKey,
+        toKey,
+        distanceM,
+        durationS,
+        provider,
+        createdAt: new Date(),
+        ttlUntil,
+      },
+    });
+  }
 }
