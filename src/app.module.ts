@@ -23,6 +23,7 @@ import { GeoModule } from './modules/geo-distance/geo-distance.module';
 import { AssignmentModule } from './modules/assignment/assignment.module';
 import { DispatcherModule } from './modules/dispatcher/dispatcher.module';
 import { DriverExecutiveModule } from './modules/driver-executive/driver-executive.module';
+import { WarehouseModule } from './modules/warehouse/warehouse.module';
 
 @Module({
   imports: [
@@ -55,6 +56,7 @@ import { DriverExecutiveModule } from './modules/driver-executive/driver-executi
     AssignmentModule,
     DispatcherModule,
     DriverExecutiveModule,
+    WarehouseModule,
     BullModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
